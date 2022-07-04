@@ -148,12 +148,25 @@ export const isSentStatus = (state: string): boolean => (
   || state === OutgoingMessageStates.DELIVERED
   || state === OutgoingMessageStates.READ
 );
+function isJsonString(str) {
+  console.log(str);
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
 
 export const isAdminMessage = (message: AdminMessage): boolean => (
   message && (message.isAdminMessage?.() || (message['messageType'] && message.messageType === 'admin'))
 );
 export const isUserMessage = (message: UserMessage): boolean => (
   message && (message.isUserMessage?.() || (message['messageType'] && message.messageType === 'user'))
+);
+export const isAppMessage = (message: UserMessage): boolean => (
+  message && isJsonString(message.data) && JSON.parse(message.data)['sb-block-data']
 );
 export const isFileMessage = (message: FileMessage): boolean => (
   message && (message.isFileMessage?.() || (message['messageType'] && message.messageType === 'file'))
@@ -162,7 +175,7 @@ export const isFileMessage = (message: FileMessage): boolean => (
 export const isOGMessage = (message: UserMessage): boolean => !!(
   message && isUserMessage(message) && message?.ogMetaData && message?.ogMetaData?.url
 );
-export const isTextMessage = (message: UserMessage): boolean => isUserMessage(message) && !isOGMessage(message);
+export const isTextMessage = (message: UserMessage): boolean => isUserMessage(message) && !isOGMessage(message) && !isAppMessage(message);
 export const isThumbnailMessage = (message: FileMessage): boolean => message && isFileMessage(message) && isSupportedFileView(message.type);
 export const isImageMessage = (message: FileMessage): boolean => message && isThumbnailMessage(message) && isImage(message.type);
 export const isVideoMessage = (message: FileMessage): boolean => message && isThumbnailMessage(message) && isVideo(message.type);
@@ -586,7 +599,7 @@ export interface StringObj {
   userId?: string;
 }
 
-export const convertWordToStringObj = (word: string, _users : Array<SendBird.User>, _template?: string): Array<StringObj> => {
+export const convertWordToStringObj = (word: string, _users: Array<SendBird.User>, _template?: string): Array<StringObj> => {
   const users = _users || [];
   const template = _template || '@'; // Use global variable
   const resultArray = [];

@@ -5,4 +5,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
   },
+  "include": [
+    "node_modules/@sendbird/uikit-react/index.d.ts"
+  ],
 }

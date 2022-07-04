@@ -13,7 +13,7 @@ const createMockChannel = (process) => {
   };
   return process ? process(mockChannel) : mockChannel;
 };
-const createMockMessage = (process) => {
+const createMockMessage = (process, data = '') => {
   const mockMessage = {
     messageId: 1010,
     messageType: 'user',
@@ -26,6 +26,7 @@ const createMockMessage = (process) => {
     sendingStatus: 'succeeded',
     parentMessageId: 0,
     parentMessageInfo: null,
+    data: data,
     sender: {
       profileUrl: '',
       userId: 'user-id-001',
@@ -230,5 +231,23 @@ describe('MessageContent', () => {
     );
     let tree = component.toJSON();
     expect(tree).toMatchSnapshot();
+  });
+
+  it('should render app message when data contains block', function () {
+    const blockData = {
+      "sb-block-data": {
+        "blocks": []
+      }
+    }
+    const component = renderer.create(
+      <MessageContent
+        className="classname-for-snapshot"
+        message={createMockMessage(undefined, JSON.stringify(blockData))}
+        channel={createMockChannel()}
+        userId="user-id-001"
+      />,
+    );
+    let tree = component.toJSON();
+    console.log(JSON.stringify(tree));
   });
 });
