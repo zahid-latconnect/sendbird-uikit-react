@@ -248,6 +248,7 @@ describe('MessageContent', () => {
       />,
     );
     let tree = component.toJSON();
-    console.log(JSON.stringify(tree));
+    expect(tree).toMatchSnapshot();
+
   });
 });
