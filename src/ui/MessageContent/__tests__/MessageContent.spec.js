@@ -240,7 +240,7 @@ describe('MessageContent', () => {
           "type": "input",
           "element": {
             "type": "plain_text_input",
-            "actionId": "plain_text_input-action"
+            "action_id": "plain_text_input-action"
           },
           "label": {
             "type": "plain_text",

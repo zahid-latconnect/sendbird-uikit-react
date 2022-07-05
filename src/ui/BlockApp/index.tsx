@@ -7,7 +7,7 @@ interface Label {
 }
 interface Element {
     type: String
-    actionId: string
+    action_id: string
     text?: String
     value?: String
 }
@@ -33,8 +33,15 @@ interface ButtonBlock extends ActionBlock {
 interface BlockData {
     blocks: [SimpleInputBlock | ButtonBlock]
 }
+
+interface Manifest {
+    name: string
+    url: string
+}
+
 interface BlockAppProps {
     blockData: BlockData
+    manifest: Manifest
 }
 
 interface BlockRendererProps {
@@ -58,7 +65,7 @@ const ElementRenderer = ({ element, updateState, handleClick }: ElementRendererP
         case "plain_text_input":
             const handleChange = (e) => {
                 const value = e.target.value;
-                updateState(element.actionId, value);
+                updateState(element.action_id, value);
 
             }
             return <div>
@@ -66,7 +73,7 @@ const ElementRenderer = ({ element, updateState, handleClick }: ElementRendererP
             </div>
         case "button":
             return <div>
-                <button id="button" onClick={() => handleClick(element.actionId)}>{element.value}</button>
+                <button id="button" onClick={() => handleClick(element.action_id)}>{element.value}</button>
             </div>
         default:
             return <div></div>
@@ -92,15 +99,15 @@ const BlockRenderer = ({ block, updateState, handleClick }: BlockRendererProps) 
             return <div></div>
     }
 }
-const BlockApp = ({ blockData }: BlockAppProps) => {
+const BlockApp = ({ blockData, manifest }: BlockAppProps) => {
     const [state, setState] = useState({});
-    const updateState = (actionId, incomingState) => {
+    const updateState = (action_id, incomingState) => {
         let newState = {};
-        newState[actionId] = incomingState;
+        newState[action_id] = incomingState;
         setState({ ...newState, ...state })
     }
-    const handleClick = (actionId) => {
-        console.log('call backend blah.com with', actionId, 'and state', state);
+    const handleClick = (action_id) => {
+        console.log(`call backend ${manifest.url} with ${action_id}, and state ${state}`);
     }
     return <div>{
         blockData.blocks.map((block, i) => {

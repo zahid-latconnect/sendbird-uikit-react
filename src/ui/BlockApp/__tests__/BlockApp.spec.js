@@ -31,16 +31,21 @@ describe('block app', () => {
                                 "emoji": true
                             },
                             "value": "click_me_123",
-                            "action_id": "actionId-0"
+                            "action_id": "action_id-0"
                         }
                     ]
                 }
             ]
         }
+
+        const manifest = {
+            name: 'my-chat-app',
+            url: 'https://my-chat-app.com'
+        }
         const component = mount(
-            <BlockApp blockData={blockData} />,
+            <BlockApp blockData={blockData} manifest={manifest} />,
         );
-        console.log(component.debug());
+
         const input = component.find('#simple-input');
 
         input.simulate('change', { target: { value: 'Hello' } });
