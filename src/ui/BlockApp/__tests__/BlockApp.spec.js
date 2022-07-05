@@ -11,8 +11,8 @@ describe('block app', () => {
                 {
                     "type": "input",
                     "element": {
-                        "type": "simple-input",
-                        "actionId": "plain_text_input-action"
+                        "type": "plain_text_input",
+                        "action_id": "plain_text_input-action"
                     },
                     "label": {
                         "type": "plain_text",
@@ -31,7 +31,7 @@ describe('block app', () => {
                                 "emoji": true
                             },
                             "value": "click_me_123",
-                            "actionId": "actionId-0"
+                            "action_id": "actionId-0"
                         }
                     ]
                 }

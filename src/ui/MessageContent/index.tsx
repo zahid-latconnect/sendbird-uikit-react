@@ -13,6 +13,7 @@ import Label, { LabelTypography, LabelColors } from '../Label';
 import EmojiReactions from '../EmojiReactions';
 
 import ClientAdminMessage from '../AdminMessage';
+import BlockApp from '../BlockApp';
 import TextMessageItemBody from '../TextMessageItemBody';
 import FileMessageItemBody from '../FileMessageItemBody';
 import ThumbnailMessageItemBody from '../ThumbnailMessageItemBody';
@@ -221,7 +222,7 @@ export default function MessageContent({
               isMentionEnabled={config?.isMentionEnabled || false}
             />
           )}
-          {(isAppMessage(message as UserMessage)) && (<div>render an app message</div>)}
+          {(isAppMessage(message as UserMessage)) && (<BlockApp blockData={JSON.parse(message.data).sb_app_blocks} />)}
           {(isOGMessage(message as UserMessage)) && (
             <OGMessageItemBody
               className="sendbird-message-content__middle__message-item-body"

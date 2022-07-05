@@ -166,7 +166,7 @@ export const isUserMessage = (message: UserMessage): boolean => (
   message && (message.isUserMessage?.() || (message['messageType'] && message.messageType === 'user'))
 );
 export const isAppMessage = (message: UserMessage): boolean => (
-  message && isJsonString(message.data) && JSON.parse(message.data)['sb-block-data']
+  message && isJsonString(message.data) && JSON.parse(message.data)['sb_app_blocks']
 );
 export const isFileMessage = (message: FileMessage): boolean => (
   message && (message.isFileMessage?.() || (message['messageType'] && message.messageType === 'file'))

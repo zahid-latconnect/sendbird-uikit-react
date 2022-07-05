@@ -55,7 +55,7 @@ interface ElementRendererProps {
 const ElementRenderer = ({ element, updateState, handleClick }: ElementRendererProps) => {
 
     switch (element.type) {
-        case "simple-input":
+        case "plain_text_input":
             const handleChange = (e) => {
                 const value = e.target.value;
                 updateState(element.actionId, value);

@@ -235,8 +235,19 @@ describe('MessageContent', () => {
 
   it('should render app message when data contains block', function () {
     const blockData = {
-      "sb-block-data": {
-        "blocks": []
+      "sb_app_blocks": {
+        "blocks": [{
+          "type": "input",
+          "element": {
+            "type": "plain_text_input",
+            "actionId": "plain_text_input-action"
+          },
+          "label": {
+            "type": "plain_text",
+            "text": "Label",
+            "emoji": true
+          }
+        }]
       }
     }
     const component = renderer.create(

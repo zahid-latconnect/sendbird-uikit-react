@@ -258,7 +258,18 @@ exports[`MessageContent should render app message when data contains block 1`] =
         </div>
       </div>
       <div>
-        render an app message
+        <div>
+          <label>
+            Label
+          </label>
+          <div>
+            <input
+              id="simple-input"
+              onChange={[Function]}
+              type="text"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </div>
