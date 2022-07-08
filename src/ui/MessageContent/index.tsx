@@ -222,7 +222,7 @@ export default function MessageContent({
               isMentionEnabled={config?.isMentionEnabled || false}
             />
           )}
-          {(isAppMessage(message as UserMessage)) && (<BlockApp blockData={JSON.parse(message.data).sb_app_blocks} />)}
+          {(isAppMessage(message as UserMessage)) && (<BlockApp markdown={JSON.parse(message.data).sb_app_ui} manifest={{}} />)}
           {(isOGMessage(message as UserMessage)) && (
             <OGMessageItemBody
               className="sendbird-message-content__middle__message-item-body"

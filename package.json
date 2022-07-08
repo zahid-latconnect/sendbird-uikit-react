@@ -56,6 +56,7 @@
     "css-vars-ponyfill": "^2.3.2",
     "date-fns": "^2.16.1",
     "prop-types": "^15.7.2",
+    "react-markdown": "^8.0.3",
     "sendbird": "^3.1.10"
   },
   "bugs": {

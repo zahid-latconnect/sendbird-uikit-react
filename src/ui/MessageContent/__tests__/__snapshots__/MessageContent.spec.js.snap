@@ -89,6 +89,7 @@ exports[`MessageContent should do a snapshot test of the MessageContent DOM 1`] 
           First second third
         </p>
       </span>
+      
       <span
         className="sendbird-message-content__middle__body-container__created-at right  sendbird-label sendbird-label--caption-3 sendbird-label--color-onbackground-2"
       >
@@ -259,16 +260,18 @@ exports[`MessageContent should render app message when data contains block 1`] =
       </div>
       <div>
         <div>
-          <label>
-            Label
-          </label>
-          <div>
-            <input
-              id="simple-input"
-              onChange={[Function]}
-              type="text"
-            />
-          </div>
+          <h1>
+            Here is a link to sendbird
+          </h1>
+          
+
+          <p>
+            <a
+              href="https://sendbird.com"
+            >
+              Sendbird
+            </a>
+          </p>
         </div>
       </div>
     </div>

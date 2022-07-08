@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import MarkdownRenderer from './MarkdownRenderer';
 
 interface Label {
     type: String
@@ -31,7 +32,7 @@ interface ButtonBlock extends ActionBlock {
 }
 
 interface BlockData {
-    blocks: [SimpleInputBlock | ButtonBlock]
+    appMarkdown: string
 }
 
 interface Manifest {
@@ -40,7 +41,7 @@ interface Manifest {
 }
 
 interface BlockAppProps {
-    blockData: BlockData
+    markdown: BlockData
     manifest: Manifest
 }
 
@@ -99,7 +100,7 @@ const BlockRenderer = ({ block, updateState, handleClick }: BlockRendererProps) 
             return <div></div>
     }
 }
-const BlockApp = ({ blockData, manifest }: BlockAppProps) => {
+const BlockApp = ({ markdown, manifest }: BlockAppProps) => {
     const [state, setState] = useState({});
     const updateState = (action_id, incomingState) => {
         let newState = {};
@@ -109,11 +110,10 @@ const BlockApp = ({ blockData, manifest }: BlockAppProps) => {
     const handleClick = (action_id) => {
         console.log(`call backend ${manifest.url} with ${action_id}, and state ${state}`);
     }
-    return <div>{
-        blockData.blocks.map((block, i) => {
-            return <BlockRenderer key={i} block={block} updateState={updateState} handleClick={handleClick} />
-        })
-    }</div>
+    return <div>
+        <MarkdownRenderer markdown={markdown} />
+
+    </div>
 }
 
 export default BlockApp;

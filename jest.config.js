@@ -81,8 +81,13 @@ module.exports = {
   // A map from regular expressions to module names that allow to stub out resources with a single module
   moduleNameMapper: {
     "\\.(css|less|sass|scss)$": "<rootDir>/__mocks__/styleMock.js",
-    "\\.(gif|ttf|eot|svg)$": "<rootDir>/__mocks__/fileMock.js"
+    "\\.(gif|ttf|eot|svg)$": "<rootDir>/__mocks__/fileMock.js",
+    "react-markdown": "<rootDir>/node_modules/react-markdown/react-markdown.min.js"
+
+
   },
+
+
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],
@@ -171,6 +176,7 @@ module.exports = {
 
   // A map from regular expressions to paths to transformers
   // transform: undefined,
+
 
   // An array of regexp pattern strings that are matched against all source file paths, matched files will skip transformation
   // transformIgnorePatterns: [

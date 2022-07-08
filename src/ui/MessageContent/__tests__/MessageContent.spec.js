@@ -234,26 +234,16 @@ describe('MessageContent', () => {
   });
 
   it('should render app message when data contains block', function () {
-    const blockData = {
-      "sb_app_blocks": {
-        "blocks": [{
-          "type": "input",
-          "element": {
-            "type": "plain_text_input",
-            "action_id": "plain_text_input-action"
-          },
-          "label": {
-            "type": "plain_text",
-            "text": "Label",
-            "emoji": true
-          }
-        }]
-      }
-    }
+    const markdownMessageData = {
+      "sb_app_ui": "# Here is a link to sendbird \n [Sendbird](https://sendbird.com)"
+    };
+
+
+
     const component = renderer.create(
       <MessageContent
         className="classname-for-snapshot"
-        message={createMockMessage(undefined, JSON.stringify(blockData))}
+        message={createMockMessage(undefined, JSON.stringify(markdownMessageData))}
         channel={createMockChannel()}
         userId="user-id-001"
       />,

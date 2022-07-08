@@ -148,8 +148,8 @@ export const isSentStatus = (state: string): boolean => (
   || state === OutgoingMessageStates.DELIVERED
   || state === OutgoingMessageStates.READ
 );
-function isJsonString(str) {
-  console.log(str);
+
+const isJsonString = (str) => {
   try {
     JSON.parse(str);
   } catch (e) {
@@ -158,7 +158,6 @@ function isJsonString(str) {
   return true;
 }
 
-
 export const isAdminMessage = (message: AdminMessage): boolean => (
   message && (message.isAdminMessage?.() || (message['messageType'] && message.messageType === 'admin'))
 );
@@ -166,7 +165,7 @@ export const isUserMessage = (message: UserMessage): boolean => (
   message && (message.isUserMessage?.() || (message['messageType'] && message.messageType === 'user'))
 );
 export const isAppMessage = (message: UserMessage): boolean => (
-  message && isJsonString(message.data) && JSON.parse(message.data)['sb_app_blocks']
+  message && message.data && isJsonString(message.data) && JSON.parse(message.data)['sb_app_ui']
 );
 export const isFileMessage = (message: FileMessage): boolean => (
   message && (message.isFileMessage?.() || (message['messageType'] && message.messageType === 'file'))
