@@ -1,7 +1,7 @@
 import React from 'react';
 import { mount } from 'enzyme';
 
-import BlockApp from '../index';
+import AppRenderer from '../index';
 
 describe('block app', () => {
     it('allows input to be sent to server', () => {
@@ -12,7 +12,7 @@ describe('block app', () => {
             url: 'https://my-chat-app.com'
         }
         const component = mount(
-            <BlockApp markdown={markdown} manifest={manifest} />,
+            <AppRenderer markdown={markdown} manifest={manifest} />,
         );
 
         console.log(component.debug());

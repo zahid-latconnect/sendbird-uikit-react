@@ -38,10 +38,10 @@ const retextSentenceSpacing = () => {
         })
     }
 }
-// interface MarkdownRendererProps {
-//     markdown: string
-// }
-const MarkdownRenderer = ({ markdown }) => {
+interface MarkdownRendererProps {
+    markdown: string
+}
+const MarkdownRenderer = ({ markdown }: MarkdownRendererProps) => {
     console.log('markdown', markdown);
     return <div><ReactMarkdown remarkPlugins={[retextSentenceSpacing]}>{markdown}</ReactMarkdown></div>
 }
