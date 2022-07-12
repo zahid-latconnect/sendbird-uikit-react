@@ -3,7 +3,7 @@ import { mount } from 'enzyme';
 
 import AppRenderer from '../index';
 
-describe('block app', () => {
+describe('app renderer', () => {
     it('allows input to be sent to server', () => {
         const markdown = "# Here is a link to sendbird \n [Sendbird](https://sendbird.com)";
 

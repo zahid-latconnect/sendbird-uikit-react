@@ -41,7 +41,7 @@ const find = /[\t ]*(?:\r?\n|\r)/g
 interface MarkdownRendererProps {
     markdown: string
 }
-const MarkdownRenderer = ({ markdown }: MarkdownRendererProps) => {
+const MarkdownRenderer = ({ markdown }: MarkdownRendererProps): JSX.Element => {
     console.log('markdown', markdown);
     return <div><ReactMarkdown remarkPlugins={[]}>{markdown}</ReactMarkdown></div>
 }
