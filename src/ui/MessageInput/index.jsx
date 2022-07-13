@@ -328,6 +328,9 @@ const MessageInput = React.forwardRef((props, ref) => {
       if (isSlashCommand(messageText)) {
         const [url, input] = parseSlashCommand(messageText)
         await callAppServerSlashCommand(url, input, messageText, channelUrl);
+        document.getElementById(TEXT_FIELD_ID).innerHTML = '';
+        setIsInput(false);
+        setHeight();
         return;
       }
       onSendMessage(params);
