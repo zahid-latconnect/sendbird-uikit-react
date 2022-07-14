@@ -21,6 +21,7 @@ const MessageInputWrapper = (): JSX.Element => {
     setQuoteMessage,
     messageInputRef,
     renderUserMentionItem,
+    sendCommand,
   } = useChannel();
   const globalStore = useSendbirdStateContext();
   const channel = currentGroupChannel;
@@ -159,6 +160,7 @@ const MessageInputWrapper = (): JSX.Element => {
           }
           return false;
         }}
+        sendCommand={sendCommand}
       />
     </div>
   );

@@ -11,6 +11,8 @@ import SendBird, { FileMessage, GroupChannel, UserMessage, UserMessageParams } f
 import { ReplyType, RenderUserProfileProps } from '../../../types';
 import { UserProfileProvider } from '../../../lib/UserProfileContext';
 import useSendbirdStateContext from '../../../hooks/useSendbirdStateContext';
+import useSendAppCommandCallback from '../../../hooks/useSendAppCommandCallback';
+
 import { CoreMessageType } from '../../../utils';
 
 import * as utils from './utils';
@@ -108,7 +110,7 @@ interface UpdateMessageProps {
 
 interface ChannelProviderInterface extends ChannelContextProps, MessageStoreInterface {
   scrollToMessage?(createdAt: number, messageId: number): void;
-  messageActionTypes: Record<string ,string>;
+  messageActionTypes: Record<string, string>;
   messagesDispatcher: CustomUseReducerDispatcher;
   quoteMessage: UserMessage | FileMessage;
   setQuoteMessage: React.Dispatch<React.SetStateAction<UserMessage | FileMessage>>;
@@ -160,6 +162,7 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
   const globalStore = useSendbirdStateContext();
   const { config } = globalStore;
   const { pubSub, logger, userId, isOnline, imageCompression, isMentionEnabled } = config;
+
   const sdk = globalStore?.stores?.sdkStore?.sdk;
   const sdkInit = globalStore?.stores?.sdkStore?.initialized;
 
@@ -251,6 +254,9 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
   });
 
   const toggleReaction = useToggleReactionCallback({ currentGroupChannel }, { logger });
+
+  const sendCommand = useSendAppCommandCallback(userId, config.accessToken);
+  console.log(sendCommand);
 
   const memoizedEmojiListItems = useMemoizedEmojiListItems({
     emojiContainer, toggleReaction,
@@ -404,6 +410,7 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
       memoizedEmojiListItems,
       scrollRef,
       toggleReaction,
+      sendCommand,
     }}>
       <UserProfileProvider
         disableUserProfile={props?.disableUserProfile}
