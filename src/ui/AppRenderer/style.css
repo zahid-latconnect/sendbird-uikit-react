@@ -20,3 +20,11 @@
     font-family: var(--sendbird-font-family-default);
   }
   
+  .app-ui img{
+    width: 100%;
+    height: 100%;
+    max-width: 376px;
+    max-height: 282px;
+
+  }
+  /* make image bigger */
