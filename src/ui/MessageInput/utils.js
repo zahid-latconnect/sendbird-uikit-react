@@ -20,4 +20,19 @@ export function debounce(func, wait, immediate) {
   };
 }
 
+export const isSlashCommand = (message) => {
+  return (message.indexOf("/") > -1);
+}
+
+export const parseSlashCommand = (message) => {
+  const splitMessage = message.split(" ");
+  const command = splitMessage[0].substring(1);
+  const params = splitMessage[1];
+  // iterate through manifest to find url for this command
+
+  // const url = getUrlForCommand(command)
+  const url = "http://localhost:8283/command"
+  return [url, params, command]
+}
+
 export default debounce;

@@ -26,6 +26,8 @@ import {
   convertWordToStringObj,
 } from '../../utils';
 
+import { isSlashCommand, parseSlashCommand } from './utils';
+
 const TEXT_FIELD_ID = 'sendbird-message-input-text-field';
 const LINE_HEIGHT = 76;
 const noop = () => { };
@@ -65,7 +67,9 @@ const MessageInput = React.forwardRef((props, ref) => {
     onMentionedUserIdsUpdated,
     onKeyUp,
     onKeyDown,
+    sendCommand
   } = props;
+  console.log(props);
   const { stringSet } = useContext(LocalizationContext);
   const fileInputRef = useRef(null);
   const [isInput, setIsInput] = useState(false);
@@ -277,30 +281,6 @@ const MessageInput = React.forwardRef((props, ref) => {
     }
   }, [isMentionEnabled]);
 
-  const parseSlashCommand = (message) => {
-    const splitMessage = message.split(" ");
-    const command = splitMessage[0];
-    const input = splitMessage[1];
-    // iterate through manifest to find url for this command
-
-    // const url = getUrlForCommand(command)
-    const url = "http://localhost:8283/command"
-    return [url, input]
-  }
-
-  const callAppServerSlashCommand = async (url, input, message, channelUrl) => {
-    await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ input, message, channelUrl })
-    })
-  }
-
-  const isSlashCommand = (message) => {
-    return (message.indexOf("/") > -1);
-  }
 
   const sendMessage = async () => {
     const textField = ref.current;
@@ -324,10 +304,10 @@ const MessageInput = React.forwardRef((props, ref) => {
         }
       });
       const params = { message: messageText, mentionTemplate };
-      console.log(messageText);
+
       if (isSlashCommand(messageText)) {
-        const [url, input] = parseSlashCommand(messageText)
-        await callAppServerSlashCommand(url, input, messageText, channelUrl);
+        const [url, params, command] = parseSlashCommand(messageText)
+        sendCommand(url, params, command, messageText, channelUrl);
         document.getElementById(TEXT_FIELD_ID).innerHTML = '';
         setIsInput(false);
         setHeight();
