@@ -1,0 +1,22 @@
+.app-ui {
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 16px;
+    word-break: break-word;
+    color: var(--sendbird-light-ondark-01);
+    background-color: var(--sendbird-light-primary-300);
+  }
+  
+  .app-ui h2,
+  .app-ui em {
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1.43;
+    letter-spacing: normal;
+    font-family: var(--sendbird-font-family-default);
+  }
+  

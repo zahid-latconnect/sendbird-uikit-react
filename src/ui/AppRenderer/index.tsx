@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import MarkdownRenderer from './MarkdownRenderer';
-
+import './style.css'
 
 
 
@@ -25,7 +25,7 @@ const AppRenderer = ({ markdown, manifest }: AppRendererProps) => {
     const handleClick = (action_id) => {
         console.log(`call backend ${manifest.url} with ${action_id}, and state ${state}`);
     }
-    return <div>
+    return <div className='app-ui'>
         <MarkdownRenderer markdown={markdown} />
 
     </div>
