@@ -304,10 +304,10 @@ const MessageInput = React.forwardRef((props, ref) => {
         }
       });
       const params = { message: messageText, mentionTemplate };
-      console.log(messageText);
+
       if (isSlashCommand(messageText)) {
-        const [url, input] = parseSlashCommand(messageText)
-        sendCommand(url, input, messageText, channelUrl);
+        const [url, params, command] = parseSlashCommand(messageText)
+        sendCommand(url, params, command, messageText, channelUrl);
         document.getElementById(TEXT_FIELD_ID).innerHTML = '';
         setIsInput(false);
         setHeight();

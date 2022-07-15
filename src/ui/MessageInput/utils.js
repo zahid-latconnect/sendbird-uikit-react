@@ -26,13 +26,13 @@ export const isSlashCommand = (message) => {
 
 export const parseSlashCommand = (message) => {
   const splitMessage = message.split(" ");
-  const command = splitMessage[0];
-  const input = splitMessage[1];
+  const command = splitMessage[0].substring(1);
+  const params = splitMessage[1];
   // iterate through manifest to find url for this command
 
   // const url = getUrlForCommand(command)
   const url = "http://localhost:8283/command"
-  return [url, input]
+  return [url, params, command]
 }
 
 export default debounce;
