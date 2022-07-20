@@ -1,30 +1,59 @@
-.app-ui {
+.markdown-container {
     width: 100%;
     box-sizing: border-box;
     position: relative;
     display: inline-block;
-    padding: 8px 12px;
+    padding: 12px 12px;
     border-radius: 16px;
     word-break: break-word;
     color: var(--sendbird-light-ondark-01);
     background-color: var(--sendbird-light-primary-300);
   }
   
-  .app-ui h2,
-  .app-ui em {
+ /* for 1st markdown option */
+  /* .markdown-container h2,
+  .markdown-container p{
+    font-size: 14px;
     font-weight: normal;
     font-stretch: normal;
     font-style: normal;
     line-height: 1.43;
     letter-spacing: normal;
     font-family: var(--sendbird-font-family-default);
+    width: 100%;
+    box-sizing: border-box;
   }
-  
-  .app-ui img{
+   */
+  /* .app-ui  */
+  .markdown-container img{
     width: 100%;
     height: 100%;
     max-width: 376px;
     max-height: 282px;
-
+    border-radius: 10px;
   }
-  /* make image bigger */
+
+  .markdown-container a {
+    text-decoration: none;
+    color: #FFFFFF;
+    
+    /* text-decoration: underline; 
+    text-decoration-color: white */
+  }
+
+/* for 2nd markdown version */
+  .markdown-container h4 {
+    font-size: 12px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    letter-spacing: normal;
+    font-family: var(--sendbird-font-family-default);
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0px;
+  }
+
+  .markdown-container p {
+    margin: 0px;
+  }

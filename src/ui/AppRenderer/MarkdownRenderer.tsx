@@ -43,7 +43,7 @@ interface MarkdownRendererProps {
 }
 const MarkdownRenderer = ({ markdown }: MarkdownRendererProps): JSX.Element => {
     console.log('markdown', markdown);
-    return <div><ReactMarkdown remarkPlugins={[]}>{markdown}</ReactMarkdown></div>
+    return <div className='markdown-container'><ReactMarkdown remarkPlugins={[]}>{markdown}</ReactMarkdown></div>
 }
 
 export default MarkdownRenderer;
