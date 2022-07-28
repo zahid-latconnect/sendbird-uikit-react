@@ -43,7 +43,25 @@ interface MarkdownRendererProps {
 }
 const MarkdownRenderer = ({ markdown }: MarkdownRendererProps): JSX.Element => {
     console.log('markdown', markdown);
-    return <div className='markdown-container'><ReactMarkdown remarkPlugins={[]}>{markdown}</ReactMarkdown></div>
+
+    const handleSendGiphy=()=>{
+        console.log('sending giphy')
+    }
+
+    const handleShuffleGiphy=()=>{
+        console.log('shuffling giphy')
+    }
+
+    const handleCancelMessage=()=>{
+        console.log('canceling giphy')
+    }
+
+    return <div className='markdown-container'>
+            <ReactMarkdown remarkPlugins={[]}>{markdown}</ReactMarkdown>
+            <button id="send-button" onClick={handleSendGiphy}>Send</button>
+            <button id="shuffle-button" onClick={handleShuffleGiphy}>Shuffle</button>
+            <button id="cancel-button" onClick={handleCancelMessage}>Cancel</button>
+        </div>
 }
 
 export default MarkdownRenderer;
