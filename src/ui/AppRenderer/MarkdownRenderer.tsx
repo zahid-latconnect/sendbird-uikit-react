@@ -4,64 +4,54 @@ import visit from 'unist-util-visit';
 console.log(visit);
 const find = /[\t ]*(?:\r?\n|\r)/g
 
-// const retextSentenceSpacing = () => {
-//     return (tree) => {
-//         visit(tree, (node, index, parent) => {
-//             /** @type {PhrasingContent[]} */
-//             const result = []
-//             let start = 0
-//             // console.log(node);
-//             find.lastIndex = 0
+// move own to own file or repo
+function remarkButtonSyntax(options) {
+    console.log('--- options', options)
+    return (tree) => {
+        visit(tree, (node, index, parent) => {
 
-//             let match = find.exec(node.value)
+            if (node.tagName === 'a' && node.type === 'element') {
+                if (node.children[0].value.includes("button:")) {
+                    node.children[0].value = node.children[0].value.split(":")[1];
+                    node.tagName = 'button';
+                    const properties = node.properties.href.split('=').reduce((prev, current, index) => {
+                        const isEven = index % 2 === 0;
+                        if (isEven) {
+                            prev[current] = "";
+                        } else {
+                            prev[node.properties.href.split('=')[index - 1]] = current;
+                        }
+                        return prev;
+                    }, {});
+                    node.properties = properties;
+                }
+                console.log('1234', node);
 
-//             while (match) {
-//                 const position = match.index
-
-//                 if (start !== position) {
-//                     result.push({ type: 'text', value: node.value.slice(start, position) })
-//                 }
-
-//                 result.push({ type: 'break' })
-//                 start = position + match[0].length
-//                 match = find.exec(node.value)
-//             }
-
-//             if (result.length > 0 && parent && typeof index === 'number') {
-//                 if (start < node.value.length) {
-//                     result.push({ type: 'text', value: node.value.slice(start) })
-//                 }
-
-//                 parent.children.splice(index, 1, ...result)
-//                 return index + result.length
-//             }
-//         })
-//     }
-// }
+            }
+        })
+    }
+}
 interface MarkdownRendererProps {
     markdown: string
 }
 const MarkdownRenderer = ({ markdown }: MarkdownRendererProps): JSX.Element => {
     console.log('markdown', markdown);
 
-    const handleSendGiphy=()=>{
-        console.log('sending giphy')
+    // move out of this file
+    const handleAppButtonClick = () => {
+        //call backend
     }
-
-    const handleShuffleGiphy=()=>{
-        console.log('shuffling giphy')
-    }
-
-    const handleCancelMessage=()=>{
-        console.log('canceling giphy')
-    }
-
+    const mockMarkdown = '[button:shuffle](id=1)[regular link](http://google.com)'
     return <div className='markdown-container'>
-            <ReactMarkdown remarkPlugins={[]}>{markdown}</ReactMarkdown>
-            <button id="send-button" onClick={handleSendGiphy}>Send</button>
-            <button id="shuffle-button" onClick={handleShuffleGiphy}>Shuffle</button>
-            <button id="cancel-button" onClick={handleCancelMessage}>Cancel</button>
-        </div>
+        <ReactMarkdown components={{
+            'button': ({ node }) => {
+                console.log('456', node);
+                return <button className="app-button-secondary" onClick={handleAppButtonClick}>{node.children[0].value}</button>
+            }
+        }}
+            rehypePlugins={[remarkButtonSyntax]}
+            children={mockMarkdown} />
+    </div>
 }
 
 export default MarkdownRenderer;

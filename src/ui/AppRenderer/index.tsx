@@ -16,15 +16,7 @@ interface AppRendererProps {
 
 
 const AppRenderer = ({ markdown, manifest }: AppRendererProps) => {
-    const [state, setState] = useState({});
-    const updateState = (action_id, incomingState) => {
-        let newState = {};
-        newState[action_id] = incomingState;
-        setState({ ...newState, ...state })
-    }
-    const handleClick = (action_id) => {
-        console.log(`call backend ${manifest.url} with ${action_id}, and state ${state}`);
-    }
+
     return <div className='app-ui'>
         <MarkdownRenderer markdown={markdown} />
 

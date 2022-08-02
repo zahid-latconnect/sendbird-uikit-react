@@ -37,8 +37,7 @@
 }
 
 
-#shuffle-button,
-#cancel-button {
+.app-button-secondary{
   font-size: 12px;
   font-family: var(--sendbird-font-family-default);
   color: white;
@@ -49,7 +48,7 @@
   margin-left: 5px;
 }
 
-#send-button{
+.app-button-primary{
     font-weight: bold;
     font-family: var(--sendbird-font-family-default);
     font-size: 12px;
