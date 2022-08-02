@@ -34,23 +34,19 @@ function remarkButtonSyntax(options) {
 interface MarkdownRendererProps {
     markdown: string
 }
-const MarkdownRenderer = ({ markdown }: MarkdownRendererProps): JSX.Element => {
+const MarkdownRenderer = ({ markdown, handleButtonClick }: MarkdownRendererProps): JSX.Element => {
     console.log('markdown', markdown);
 
-    // move out of this file
-    const handleAppButtonClick = () => {
-        //call backend
-    }
     const mockMarkdown = '[button:shuffle](id=1)[regular link](http://google.com)'
     return <div className='markdown-container'>
         <ReactMarkdown components={{
             'button': ({ node }) => {
                 console.log('456', node);
-                return <button className="app-button-secondary" onClick={handleAppButtonClick}>{node.children[0].value}</button>
+                return <button className="app-button-secondary" onClick={() => handleButtonClick(node.properties)}>{node.children[0].value}</button>
             }
         }}
             rehypePlugins={[remarkButtonSyntax]}
-            children={mockMarkdown} />
+            children={markdown} />
     </div>
 }
 

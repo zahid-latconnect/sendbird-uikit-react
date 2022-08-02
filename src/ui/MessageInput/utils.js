@@ -32,7 +32,7 @@ export const parseSlashCommand = (message) => {
 
   // const url = getUrlForCommand(command)
   const url = "http://localhost:8283/command"
-  return [url, params, command]
+  return [url, { commandInput: params }, 'command']
 }
 
 export default debounce;

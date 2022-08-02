@@ -77,6 +77,7 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
     setQuoteMessage,
     resendMessage,
     renderUserMentionItem,
+    sendCommand
   } = useChannel();
 
   const [showEdit, setShowEdit] = useState(false);
@@ -305,6 +306,7 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
             resendMessage={resendMessage}
             toggleReaction={toggleReaction}
             setQuoteMessage={setQuoteMessage}
+            sendCommand={sendCommand}
           />
         )
       }

@@ -76,6 +76,7 @@ export default function MessageContent({
   resendMessage,
   toggleReaction,
   setQuoteMessage,
+  sendCommand
 }: Props): ReactElement {
   const messageTypes = getUIKitMessageTypes();
   const { dateLocale } = useLocalization();
@@ -222,7 +223,7 @@ export default function MessageContent({
               isMentionEnabled={config?.isMentionEnabled || false}
             />
           )}
-          {(isAppMessage(message as UserMessage)) && (<AppRenderer markdown={JSON.parse(message.data).sb_app_ui} manifest={{ name: '', url: '' }} />)}
+          {(isAppMessage(message as UserMessage)) && (<AppRenderer message={message} sendCommand={sendCommand} manifest={{ name: 'basic', url: 'http://localhost:8283/command' }} />)}
           {(isOGMessage(message as UserMessage)) && (
             <OGMessageItemBody
               className="sendbird-message-content__middle__message-item-body"

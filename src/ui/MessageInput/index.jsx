@@ -307,7 +307,7 @@ const MessageInput = React.forwardRef((props, ref) => {
 
       if (isSlashCommand(messageText)) {
         const [url, params, command] = parseSlashCommand(messageText)
-        sendCommand(url, params, command, messageText, channelUrl);
+        sendCommand(url, params, 'command', messageText, channelUrl);
         document.getElementById(TEXT_FIELD_ID).innerHTML = '';
         setIsInput(false);
         setHeight();
