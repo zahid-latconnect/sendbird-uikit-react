@@ -235,7 +235,7 @@ describe('MessageContent', () => {
 
   it('should render app message when data contains block', function () {
     const markdownMessageData = {
-      "sb_app_ui": "# Here is a link to sendbird \n [Sendbird](https://sendbird.com)"
+      "sb_app": "# Here is a link to sendbird \n [Sendbird](https://sendbird.com)"
     };
 
 

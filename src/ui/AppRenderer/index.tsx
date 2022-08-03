@@ -17,7 +17,7 @@ interface AppRendererProps {
 
 
 const AppRenderer = ({ message, appManifests, sendCommand }: AppRendererProps) => {
-    const appData = JSON.parse(message.data).sb_app_ui;
+    const appData = JSON.parse(message.data).sb_app;
     const handleButtonClick = async (nodeProperties) => {
         const params = {
             buttonClick: true,
