@@ -221,6 +221,8 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
         }
         <MessageInput
           isEdit
+          test="hey"
+          appManifests={appManifests}
           disabled={isDisabledBecauseFrozen(currentGroupChannel)}
           ref={editMessageInputRef}
           mentionSelectedUser={selectedUser}

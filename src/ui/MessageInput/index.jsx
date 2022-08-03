@@ -48,6 +48,7 @@ const initialTargetStringInfo = {
 
 const MessageInput = React.forwardRef((props, ref) => {
   const {
+    appManifests,
     className,
     isEdit,
     isMentionEnabled,
@@ -69,7 +70,7 @@ const MessageInput = React.forwardRef((props, ref) => {
     onKeyDown,
     sendCommand
   } = props;
-  console.log(props);
+  console.log('1234', appManifests);
   const { stringSet } = useContext(LocalizationContext);
   const fileInputRef = useRef(null);
   const [isInput, setIsInput] = useState(false);
@@ -520,6 +521,7 @@ MessageInput.propTypes = {
 };
 
 MessageInput.defaultProps = {
+  appManifests: 'test',
   className: '',
   channelUrl: '',
   onSendMessage: noop,

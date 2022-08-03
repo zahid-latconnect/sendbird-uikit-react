@@ -15,15 +15,21 @@ interface AppRendererProps {
 }
 
 
-const AppRenderer = ({ message, manifest, sendCommand }: AppRendererProps) => {
+
+const AppRenderer = ({ message, manifests, sendCommand }: AppRendererProps) => {
 
     const handleButtonClick = async (nodeProperties) => {
         const params = {
             buttonClick: true,
             buttonId: nodeProperties.id
         }
-        console.log('333', message);
-        const url = manifest.url;
+        const parsedMessageData = Object.keys(JSON.parse(message.data));
+        const appName = parsedMessageData.find((key) => { return key.includes('sb_app') });
+        console.log(appName);
+        debugger;
+        const appManifest = manifests.find((manifest) => { return manifest.name === 'sb_app_ui' });
+        debugger;
+        const url = appManifest.url;
         const command = null;
         const channelUrl = message.channelUrl;
         const messageId = message.messageId;

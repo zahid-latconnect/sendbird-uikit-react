@@ -52,6 +52,25 @@ export const basicSDK = () => fitPageSize(
   />
 );
 
+const appManifests = [
+  {
+    name: 'basic-chat-app',
+    url: 'http://localhost:8283',
+    command: 'basic'
+  }
+]
+
+export const chatApps = () => fitPageSize(
+  <App
+    appId={appId}
+    userId={userId}
+    nickname={userId}
+    config={{ appManifests }}
+    showSearchIcon
+  /*config={{ logLevel: 'all' }}*/
+  />
+);
+
 export const darkTheme = () => fitPageSize(
   <App
     appId={appId}

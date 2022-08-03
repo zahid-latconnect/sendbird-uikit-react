@@ -47,6 +47,7 @@ export default function Sendbird(props) {
   } = props;
 
   const {
+    appManifests = [],
     logLevel = '',
     userMention = {},
   } = config;
@@ -178,6 +179,7 @@ export default function Sendbird(props) {
           },
           isTypingIndicatorEnabledOnChannelList,
           isMessageReceiptStatusEnabledOnChannelList,
+          appManifests
         },
       }}
     >

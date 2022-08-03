@@ -26,7 +26,7 @@ const MessageInputWrapper = (): JSX.Element => {
   const globalStore = useSendbirdStateContext();
   const channel = currentGroupChannel;
 
-  const { isOnline, isMentionEnabled, userMention } = globalStore?.config;
+  const { appManifests, isOnline, isMentionEnabled, userMention } = globalStore?.config;
   const maxUserMentionCount = userMention?.maxMentionCount || 10;
   const maxUserSuggestionCount = userMention?.maxSuggestionCount || 15;
 
@@ -109,6 +109,7 @@ const MessageInputWrapper = (): JSX.Element => {
         </div>
       )}
       <MessageInput
+        appManifests={appManifests}
         className="sendbird-message-input-wrapper__message-input"
         channelUrl={channel?.url}
         mentionSelectedUser={selectedUser}

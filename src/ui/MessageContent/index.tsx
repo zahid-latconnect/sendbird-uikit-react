@@ -85,7 +85,6 @@ export default function MessageContent({
   const avatarRef = useRef(null);
   const [mouseHover, setMouseHover] = useState(false);
   const [supposedHover, setSupposedHover] = useState(false);
-
   const isByMe = (userId === (message as UserMessage | FileMessage)?.sender?.userId)
     || ((message as UserMessage | FileMessage).sendingStatus === 'pending')
     || ((message as UserMessage | FileMessage).sendingStatus === 'failed');
@@ -223,7 +222,7 @@ export default function MessageContent({
               isMentionEnabled={config?.isMentionEnabled || false}
             />
           )}
-          {(isAppMessage(message as UserMessage)) && (<AppRenderer message={message} sendCommand={sendCommand} manifest={{ name: 'basic', url: 'http://localhost:8283/command' }} />)}
+          {(isAppMessage(message as UserMessage)) && (<AppRenderer message={message} sendCommand={sendCommand} manifests={config.appManifests} />)}
           {(isOGMessage(message as UserMessage)) && (
             <OGMessageItemBody
               className="sendbird-message-content__middle__message-item-body"
