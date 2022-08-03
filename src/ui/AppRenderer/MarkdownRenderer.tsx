@@ -41,7 +41,6 @@ const MarkdownRenderer = ({ markdown, handleButtonClick }: MarkdownRendererProps
     return <div className='markdown-container'>
         <ReactMarkdown components={{
             'button': ({ node }) => {
-                console.log('456', node);
                 return <button className="app-button-secondary" onClick={() => handleButtonClick(node.properties)}>{node.children[0].value}</button>
             }
         }}

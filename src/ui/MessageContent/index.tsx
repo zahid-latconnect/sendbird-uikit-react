@@ -94,7 +94,6 @@ export default function MessageContent({
   const supposedHoverClassName = supposedHover ? 'supposed-hover' : '';
   const useReplying = !!((replyType === 'QUOTE_REPLY') && message?.parentMessageId && message?.parentMessage);
   const useReplyingClassName = useReplying ? 'use-quote' : '';
-  console.log(message);
   if (message?.isAdminMessage?.() || message?.messageType === 'admin') {
     return (<ClientAdminMessage message={message} />);
   }
@@ -222,7 +221,7 @@ export default function MessageContent({
               isMentionEnabled={config?.isMentionEnabled || false}
             />
           )}
-          {(isAppMessage(message as UserMessage)) && (<AppRenderer message={message} sendCommand={sendCommand} appManifests={config.appManifests} />)}
+          {(isAppMessage(message as UserMessage)) && (<AppRenderer message={message} sendCommand={sendCommand} appManifests={config.appManifests} isByMe />)}
           {(isOGMessage(message as UserMessage)) && (
             <OGMessageItemBody
               className="sendbird-message-content__middle__message-item-body"

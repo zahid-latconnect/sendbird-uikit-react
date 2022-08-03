@@ -16,8 +16,11 @@ interface AppRendererProps {
 
 
 
-const AppRenderer = ({ message, appManifests, sendCommand }: AppRendererProps) => {
+const AppRenderer = ({ message, appManifests, sendCommand, isByMe }: AppRendererProps) => {
     const appData = JSON.parse(message.data).sb_app;
+    if (!!appData.isDraft && !isByMe) {
+        return null;
+    }
     const handleButtonClick = async (nodeProperties) => {
         const params = {
             buttonClick: true,
@@ -26,7 +29,6 @@ const AppRenderer = ({ message, appManifests, sendCommand }: AppRendererProps) =
         const appManifest = appManifests.find((manifest) => (manifest.name === appData.name));
 
         const url = appManifest.url;
-        const command = null;
         const channelUrl = message.channelUrl;
         const messageId = message.messageId;
         const messageText = message.message;
