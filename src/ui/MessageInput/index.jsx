@@ -307,7 +307,9 @@ const MessageInput = React.forwardRef((props, ref) => {
       const params = { message: messageText, mentionTemplate };
 
       if (isSlashCommand(messageText)) {
-        const [url, params, command] = parseSlashCommand(messageText)
+        const [command, params] = parseSlashCommand(messageText);
+        const appManifest = appManifests.find((manifest) => (manifest.command === command));
+        const url = appManifest.url;
         sendCommand(url, params, 'command', messageText, channelUrl);
         document.getElementById(TEXT_FIELD_ID).innerHTML = '';
         setIsInput(false);

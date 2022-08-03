@@ -31,8 +31,7 @@ export const parseSlashCommand = (message) => {
   // iterate through manifest to find url for this command
 
   // const url = getUrlForCommand(command)
-  const url = "http://localhost:8283/command"
-  return [url, { commandInput: params }, 'command']
+  return [command, { commandInput: params }];
 }
 
 export default debounce;
