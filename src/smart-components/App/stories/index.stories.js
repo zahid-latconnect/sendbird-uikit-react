@@ -54,9 +54,9 @@ export const basicSDK = () => fitPageSize(
 
 const appManifests = [
   {
-    name: 'basic-chat-app',
-    url: 'http://localhost:8283/basic-chat-app',
-    command: 'basic'
+    "name": "basic-chat-app",
+    "url": "http://localhost:8283/basic-chat-app",
+    "command": "basic"
   }
 ]
 

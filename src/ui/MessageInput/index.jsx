@@ -70,7 +70,6 @@ const MessageInput = React.forwardRef((props, ref) => {
     onKeyDown,
     sendCommand
   } = props;
-  console.log('1234', appManifests);
   const { stringSet } = useContext(LocalizationContext);
   const fileInputRef = useRef(null);
   const [isInput, setIsInput] = useState(false);

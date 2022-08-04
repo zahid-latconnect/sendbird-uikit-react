@@ -27,10 +27,7 @@ export const isSlashCommand = (message) => {
 export const parseSlashCommand = (message) => {
   const splitMessage = message.split(" ");
   const command = splitMessage[0].substring(1);
-  const params = splitMessage[1];
-  // iterate through manifest to find url for this command
-
-  // const url = getUrlForCommand(command)
+  const params = message.split(`${splitMessage[0]} `)[1];
   return [command, { commandInput: params }];
 }
 
