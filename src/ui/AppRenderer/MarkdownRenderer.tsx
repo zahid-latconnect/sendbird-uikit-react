@@ -22,9 +22,11 @@ function remarkMessageExtentionSyntax(options) {
                 // if button
                 if (node.children[0].value.includes("button:")) { //need better matching. Too loose
                     node.children[0].value = node.children[0].value.split(":")[1];
+
                     node.tagName = 'button';
-                    const properties = getElementProperties(node);
-                    node.properties = properties;
+                    node.properties.id = node.children[0].value;
+                    // const properties = getElementProperties(node);
+                    // node.properties = properties;
                 }
 
                 // if poll 
