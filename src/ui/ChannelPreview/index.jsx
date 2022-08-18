@@ -24,7 +24,8 @@ export default function ChannelPreview({
   const {
     userId,
   } = currentUser;
-  const { isBroadcast, isFrozen } = channel;
+  const isFrozen = channel?.isFrozen;
+  const isBroadcast = channel?.isBroadcast;
   const { dateLocale, stringSet } = useLocalization();
   return (
     <div
@@ -125,16 +126,19 @@ export default function ChannelPreview({
 }
 
 ChannelPreview.propTypes = {
+  /** Type: GroupChannel / OpenChannel(Not tested) */
   channel: PropTypes.shape({
     members: PropTypes.arrayOf(PropTypes.shape({})),
     coverUrl: PropTypes.string,
     isBroadcast: PropTypes.bool,
     isFrozen: PropTypes.bool,
   }),
+  /** Type: User */
   currentUser: PropTypes.shape({
     userId: PropTypes.string,
   }),
   isActive: PropTypes.bool,
+  /** To render dropdown menu */
   ChannelAction: PropTypes.element.isRequired,
   theme: PropTypes.string,
   onClick: PropTypes.func,

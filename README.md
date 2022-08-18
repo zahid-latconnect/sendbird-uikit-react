@@ -1,6 +1,5 @@
 # sendbird-uikit
 
-[![Version 3 beta](https://img.shields.io/badge/Sendbird-BETA-blue.svg)](https://github.com/sendbird/sendbird-uikit-react/tree/develop-v3)
 [![Platform React](https://img.shields.io/badge/Platform-React-orange.svg)](https://reactjs.org)
 [![Language TypeScript](https://img.shields.io/badge/Language-TypeScript-orange.svg)](https://www.typescriptlang.org/)
 
@@ -101,6 +100,24 @@ npm run lint
 * We are trying to progressively move our source code to typescript - which means older JS code and newly written TS code will coxist while we migrate older JS code to TS
 * .eslintrc.json lints ts files and .eslintrc.js lints js files
 * Type definition file can be `src/index.d.ts` which will be copied to `/release` directory
+
+### Webpack 5
+
+Webpack 5 removes stream and buffer componets from default polyfill
+To enable these, install buffer and stream and then add the following to webpack.cofig.js
+```javascript
+module.exports = {
+  //...
+  resolve: {
+    fallback: {
+      buffer: require.resolve('buffer'),
+      stream: require.resolve('stream-browserify'),
+    },
+  },
+};
+
+```
+To read more: https://webpack.js.org/configuration/resolve/#resolvefallback
 
 ### Creating/exporting new components
 

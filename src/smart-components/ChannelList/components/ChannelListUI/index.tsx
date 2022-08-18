@@ -1,8 +1,8 @@
 import './channel-list-ui.scss';
 
-import React, { useState } from 'react';
-
-import SendBird from 'sendbird';
+import React, { useState, useEffect } from 'react';
+import type { GroupChannel, Member, SendbirdGroupChat } from '@sendbird/chat/groupChannel';
+import type { User } from '@sendbird/chat';
 
 import ChannelListHeader from '../ChannelListHeader';
 import AddChannel from '../AddChannel';
@@ -18,15 +18,15 @@ import PlaceHolder, { PlaceHolderTypes } from '../../../../ui/PlaceHolder';
 const DELIVERY_RECIPT = 'delivery_receipt';
 
 interface RenderChannelPreviewProps {
-  channel: SendBird.GroupChannel;
+  channel: GroupChannel;
   onLeaveChannel(
-    channel: SendBird.GroupChannel,
-    onLeaveChannelCb?: (c: SendBird.GroupChannel) => void,
+    channel: GroupChannel,
+    onLeaveChannelCb?: (c: GroupChannel) => void,
   );
 }
 
 interface RenderUserProfileProps {
-  user: SendBird.Member | SendBird.User;
+  user: Member | User;
   currentUserId: string;
   close(): void;
 }
@@ -70,9 +70,28 @@ const ChannelListUI: React.FC<ChannelListUIProps> = (props: ChannelListUIProps) 
   const isOnline = state?.config?.isOnline;
   const logger = config?.logger;
 
-  const sdk = sdkStore?.sdk;
+  const sdk = sdkStore?.sdk as SendbirdGroupChat;
   const sdkError = sdkStore?.error;
   const sdkIntialized = sdkStore?.initialized || false;
+
+  const [channelsTomarkAsRead, setChannelsToMarkAsRead] = useState([]);
+  useEffect(() => {
+    // https://stackoverflow.com/a/60907638
+    let isMounted = true;
+    if (channelsTomarkAsRead?.length > 0) {
+      channelsTomarkAsRead?.forEach((c, idx) => {
+        // Plan-based rate limits - minimum limit is 5 requests per second
+        setTimeout(() => {
+          if (isMounted) {
+            c?.markAsDelivered();
+          }
+        }, 2000 * idx);
+      });
+    }
+    return () => {
+      isMounted = false;
+    }
+  }, [channelsTomarkAsRead]);
 
   return (
     <>
@@ -112,15 +131,7 @@ const ChannelListUI: React.FC<ChannelListUIProps> = (props: ChannelListUIProps) 
               type: channelListActions.FETCH_CHANNELS_START,
               payload: null,
             });
-            channelSource?.next((channelList, err) => {
-              if (err) {
-                logger.info('ChannelList: Fetching channels failed', err);
-                channelListDispatcher({
-                  type: channelListActions.FETCH_CHANNELS_FAILURE,
-                  payload: channelList,
-                });
-                return;
-              }
+            channelSource.next().then((channelList) => {
               logger.info('ChannelList: Fetching channels successful', channelList);
               channelListDispatcher({
                 type: channelListActions.FETCH_CHANNELS_SUCCESS,
@@ -132,13 +143,14 @@ const ChannelListUI: React.FC<ChannelListUIProps> = (props: ChannelListUIProps) 
               if (canSetMarkAsDelivered) {
                 logger.info('ChannelList: Marking all channels as read');
                 // eslint-disable-next-line no-unused-expressions
-                channelList?.forEach((c, idx) => {
-                  // Plan-based rate limits - minimum limit is 5 requests per second
-                  setTimeout(() => {
-                    sdk?.markAsDelivered(c?.url);
-                  }, 300 * idx);
-                });
+                setChannelsToMarkAsRead(channelList);
               }
+            }).catch((err) => {
+              logger.info('ChannelList: Fetching channels failed', err);
+              channelListDispatcher({
+                type: channelListActions.FETCH_CHANNELS_FAILURE,
+                payload: err,
+              });
             });
           }
         }}
@@ -172,7 +184,7 @@ const ChannelListUI: React.FC<ChannelListUIProps> = (props: ChannelListUIProps) 
                     }
                     channelListDispatcher({
                       type: channelListActions.LEAVE_CHANNEL_SUCCESS,
-                      payload: channel.url,
+                      payload: channel?.url,
                     });
                   })
                   .catch((err) => {
@@ -196,18 +208,18 @@ const ChannelListUI: React.FC<ChannelListUIProps> = (props: ChannelListUIProps) 
                 (renderChannelPreview)
                   ? (
                     // eslint-disable-next-line
-                    <div key={channel.url} onClick={onClick}>
+                    <div key={channel?.url} onClick={onClick}>
                       {renderChannelPreview({ channel, onLeaveChannel })}
                     </div>
                   )
                   : (
                     <ChannelPreview
-                      key={channel.url}
+                      key={channel?.url}
                       tabIndex={idx}
                       onClick={onClick}
                       channel={channel}
-                      isActive={channel.url === currentChannel?.url}
-                      isTyping={typingChannels?.some(({ url }) => url === channel.url)}
+                      isActive={channel?.url === currentChannel?.url}
+                      isTyping={typingChannels?.some(({ url }) => url === channel?.url)}
                       renderChannelAction={(() => (
                         <ChannelPreviewAction
                           disabled={!isOnline}

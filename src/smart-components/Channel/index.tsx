@@ -13,8 +13,8 @@ const Channel: React.FC<ChannelProps> = (props: ChannelProps) => {
   return (
     <ChannelProvider
       channelUrl={props?.channelUrl}
-      useMessageGrouping={props?.useMessageGrouping}
-      useReaction={props?.useReaction}
+      isReactionEnabled={props?.isReactionEnabled}
+      isMessageGroupingEnabled={props?.isMessageGroupingEnabled}
       showSearchIcon={props?.showSearchIcon}
       highlightedMessage={props?.highlightedMessage}
       startingPoint={props?.startingPoint}
@@ -36,7 +36,7 @@ const Channel: React.FC<ChannelProps> = (props: ChannelProps) => {
         renderMessage={props?.renderMessage}
         renderMessageInput={props?.renderMessageInput}
         renderTypingIndicator={props?.renderTypingIndicator}
-        renderCustomSeperator={props?.renderCustomSeperator}
+        renderCustomSeparator={props?.renderCustomSeparator}
       />
     </ChannelProvider>
   );

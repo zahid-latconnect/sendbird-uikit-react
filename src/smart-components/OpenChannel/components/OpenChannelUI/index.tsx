@@ -1,7 +1,7 @@
 import './open-channel-ui.scss';
 
 import React from 'react';
-import { useOpenChannel } from '../../context/OpenChannelProvider';
+import { useOpenChannelContext } from '../../context/OpenChannelProvider';
 
 import OpenChannelInput from '../OpenChannelInput';
 import FrozenChannelNotification from '../FrozenChannelNotification';
@@ -12,12 +12,12 @@ import OpenChannelMessageList from '../OpenChannelMessageList';
 import { RenderMessageProps } from '../../../../types';
 
 export interface OpenChannelUIProps {
-  renderMessage?: (props: RenderMessageProps) => React.ReactNode;
-  renderHeader?: () => React.ReactNode;
-  renderInput?: () => React.ReactNode;
-  renderPlaceHolderEmptyList?: () => React.ReactNode;
-  renderPlaceHolderError?: () => React.ReactNode;
-  renderPlaceHolderLoading?: () => React.ReactNode;
+  renderMessage?: (props: RenderMessageProps) => React.ElementType<RenderMessageProps>;
+  renderHeader?: () => React.ReactElement;
+  renderInput?: () => React.ReactElement;
+  renderPlaceHolderEmptyList?: () => React.ReactElement;
+  renderPlaceHolderError?: () => React.ReactElement;
+  renderPlaceHolderLoading?: () => React.ReactElement;
 }
 
 const COMPONENT_CLASS_NAME = 'sendbird-openchannel-conversation';
@@ -36,7 +36,7 @@ const OpenChannelUI: React.FC<OpenChannelUIProps> = ({
     loading,
     isInvalid,
     messageInputRef,
-  } = useOpenChannel();
+  } = useOpenChannelContext();
 
   if (
     !currentOpenChannel

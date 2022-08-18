@@ -1,32 +1,31 @@
-import React, { ReactElement, useContext } from 'react';
-import type SendBird from 'sendbird';
 import './index.scss';
+import React, { ReactElement, useContext } from 'react';
+import type { GroupChannel, GroupChannelCreateParams } from '@sendbird/chat/groupChannel';
+import type { User } from '@sendbird/chat';
 
 import { LocalizationContext } from '../../lib/LocalizationContext';
 import withSendbirdContext from '../../lib/SendbirdSdkContext';
-import { getSdk, getCreateChannel } from '../../lib/selectors';
+import { getSdk, getCreateGroupChannel } from '../../lib/selectors';
 import Avatar from '../Avatar/index';
 import Label, { LabelColors, LabelTypography } from '../Label';
 import Button, { ButtonTypes } from '../Button';
 
 interface Logger {
-  info?(message: string, channel: SendBird.GroupChannel): void;
+  info?(message: string, channel: GroupChannel): void;
 }
 
 interface Props {
-  user: SendBird.User;
+  user: User;
   currentUserId?: string;
-  sdk?: SendBird.SendBirdInstance;
   logger?: Logger;
   disableMessaging?: boolean;
-  createChannel?(params: SendBird.GroupChannelParams): Promise<SendBird.GroupChannel>;
+  createChannel?(params: GroupChannelCreateParams): Promise<GroupChannel>;
   onSuccess?(): void;
 }
 
 function UserProfile({
   user,
   currentUserId,
-  sdk,
   logger,
   disableMessaging = false,
   createChannel,
@@ -39,7 +38,7 @@ function UserProfile({
         <Avatar
           height="80px"
           width="80px"
-          src={user.profileUrl}
+          src={user?.profileUrl}
         />
       </section>
       <section className="sendbird__user-profile-name">
@@ -47,18 +46,19 @@ function UserProfile({
           type={LabelTypography.H_2}
           color={LabelColors.ONBACKGROUND_1}
         >
-          {user.nickname || stringSet.NO_NAME}
+          {user?.nickname || stringSet.NO_NAME}
         </Label>
       </section>
       {
-        (user.userId !== currentUserId) && !disableMessaging && (
+        (user?.userId !== currentUserId) && !disableMessaging && (
           <section className="sendbird__user-profile-message">
             <Button
               type={ButtonTypes.SECONDARY}
               onClick={() => {
-                const params = new sdk.GroupChannelParams();
-                params.isDistinct = true;
-                params.addUserIds([user.userId]);
+                const params: GroupChannelCreateParams = {
+                  isDistinct: true,
+                  invitedUserIds: [user?.userId],
+                };
                 onSuccess();
                 createChannel(params)
                   .then((groupChannel) => {
@@ -85,7 +85,7 @@ function UserProfile({
           type={LabelTypography.BODY_1}
           color={LabelColors.ONBACKGROUND_1}
         >
-          {user.userId}
+          {user?.userId}
         </Label>
       </section>
     </div>
@@ -94,7 +94,7 @@ function UserProfile({
 
 const mapStoreToProps = (store) => ({
   sdk: getSdk(store),
-  createChannel: getCreateChannel(store),
+  createChannel: getCreateGroupChannel(store),
   logger: store.config.logger,
   pubsub: store.config.pubSub,
 });

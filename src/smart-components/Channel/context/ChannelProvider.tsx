@@ -6,7 +6,16 @@ import React, {
   useRef,
   useMemo,
 } from 'react';
-import SendBird, { FileMessage, GroupChannel, UserMessage, UserMessageParams } from 'sendbird';
+
+import type { GroupChannel, SendbirdGroupChat } from '@sendbird/chat/groupChannel';
+import type {
+  FileMessage,
+  FileMessageCreateParams,
+  UserMessage,
+  UserMessageCreateParams,
+  UserMessageUpdateParams,
+} from '@sendbird/chat/message';
+import type { SendbirdError, User } from '@sendbird/chat';
 
 import { ReplyType, RenderUserProfileProps } from '../../../types';
 import { UserProfileProvider } from '../../../lib/UserProfileContext';
@@ -62,14 +71,14 @@ export type ChannelQueries = {
 export type ChannelContextProps = {
   children?: React.ReactNode;
   channelUrl: string;
-  useMessageGrouping?: boolean;
-  useReaction?: boolean;
+  isReactionEnabled?: boolean;
+  isMessageGroupingEnabled?: boolean;
   showSearchIcon?: boolean;
   highlightedMessage?: number;
   startingPoint?: number;
-  onBeforeSendUserMessage?(text: string, quotedMessage?: SendBird.UserMessage | SendBird.FileMessage): SendBird.UserMessageParams;
-  onBeforeSendFileMessage?(file: File, quotedMessage?: SendBird.UserMessage | SendBird.FileMessage): SendBird.FileMessageParams;
-  onBeforeUpdateUserMessage?(text: string): SendBird.UserMessageParams;
+  onBeforeSendUserMessage?(text: string, quotedMessage?: UserMessage | FileMessage): UserMessageCreateParams;
+  onBeforeSendFileMessage?(file: File, quotedMessage?: UserMessage | FileMessage): FileMessageCreateParams;
+  onBeforeUpdateUserMessage?(text: string): UserMessageUpdateParams;
   onChatHeaderActionClick?(event: React.MouseEvent<HTMLElement>): void;
   onSearchClick?(): void;
   replyType?: ReplyType;
@@ -97,14 +106,14 @@ interface SendMessageParams {
   message: string;
   quoteMessage?: UserMessage | FileMessage;
   // mentionedUserIds?: Array<string>;
-  mentionedUsers?: Array<SendBird.User>;
+  mentionedUsers?: Array<User>;
   mentionTemplate?: string;
 }
 
 interface UpdateMessageProps {
   messageId: string | number;
   message: string;
-  mentionedUsers?: Array<SendBird.User>;
+  mentionedUsers?: Array<User>;
   mentionTemplate?: string;
 }
 
@@ -128,15 +137,15 @@ interface ChannelProviderInterface extends ChannelContextProps, MessageStoreInte
   setHighLightedMessageId: React.Dispatch<React.SetStateAction<number>>;
   messageInputRef: React.MutableRefObject<HTMLInputElement>,
   deleteMessage(message: CoreMessageType): Promise<CoreMessageType>,
-  updateMessage(props: UpdateMessageProps, callback?: (err: SendBird.SendBirdError, message: SendBird.UserMessage) => void): Promise<CoreMessageType>,
+  updateMessage(props: UpdateMessageProps, callback?: (err: SendbirdError, message: UserMessage) => void): Promise<CoreMessageType>,
   resendMessage(failedMessage: UserMessage | FileMessage): Promise<UserMessage | FileMessage>,
   // TODO: Good to change interface to using params / This part need refactoring
-  sendMessage(props: SendMessageParams): Promise<SendBird.UserMessage>,
-  sendFileMessage(file: File, quoteMessage: UserMessage | FileMessage): Promise<SendBird.FileMessage>,
+  sendMessage(props: SendMessageParams): Promise<UserMessage>,
+  sendFileMessage(file: File, quoteMessage: UserMessage | FileMessage): Promise<FileMessage>,
   // sendMessage(messageParams: SendBird.UserMessageParams): Promise<SendBird.UserMessage>,
   // sendFileMessage(messageParams: SendBird.FileMessageParams): Promise<SendBird.FileMessage>,
-  toggleReaction(message: SendBird.UserMessage | SendBird.FileMessage, emojiKey: string, isReacted: boolean): void,
-  renderUserMentionItem?: (props: { user: SendBird.User }) => JSX.Element;
+  toggleReaction(message: UserMessage | FileMessage, emojiKey: string, isReacted: boolean): void,
+  renderUserMentionItem?: (props: { user: User }) => JSX.Element;
 }
 
 const ChannelContext = React.createContext<ChannelProviderInterface | null>(undefined);
@@ -145,8 +154,8 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
   const {
     channelUrl,
     children,
-    useMessageGrouping,
-    useReaction,
+    isReactionEnabled,
+    isMessageGroupingEnabled,
     showSearchIcon,
     highlightedMessage,
     startingPoint,
@@ -162,8 +171,7 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
   const globalStore = useSendbirdStateContext();
   const { config } = globalStore;
   const { pubSub, logger, userId, isOnline, imageCompression, isMentionEnabled } = config;
-
-  const sdk = globalStore?.stores?.sdkStore?.sdk;
+  const sdk = globalStore?.stores?.sdkStore?.sdk as SendbirdGroupChat;
   const sdkInit = globalStore?.stores?.sdkStore?.initialized;
 
   const [initialTimeStamp, setInitialTimeStamp] = useState(startingPoint);
@@ -199,11 +207,12 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
     readStatus,
   } = messagesStore;
 
-  const { isBroadcast, isSuper } = currentGroupChannel;
+  const isSuper = currentGroupChannel?.isSuper || false;
+  const isBroadcast = currentGroupChannel?.isBroadcast || false;
   const { appInfo } = sdk;
   const usingReaction = (
-    appInfo?.isUsingReaction && !isBroadcast && !isSuper && useReaction
-    // TODO: Make useReaction independent from appInfo.isUsingReaction
+    appInfo?.useReaction && !isBroadcast && !isSuper && isReactionEnabled
+    // TODO: Make isReactionEnabled independent from appInfo.useReaction
   );
 
   const emojiAllMap = useMemo(() => (
@@ -217,10 +226,10 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
       : []
   ), [emojiContainer]);
   const nicknamesMap: Map<string, string> = useMemo(() => (
-    usingReaction
-      ? utils.getNicknamesMapFromMembers(currentGroupChannel.members)
+    (usingReaction && currentGroupChannel)
+      ? utils.getNicknamesMapFromMembers(currentGroupChannel?.members)
       : new Map()
-  ), [currentGroupChannel.members]);
+  ), [currentGroupChannel?.members]);
 
   // Scrollup is default scroll for channel
   const onScrollCallback = useScrollCallback({
@@ -261,7 +270,7 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
   const memoizedEmojiListItems = useMemoizedEmojiListItems({
     emojiContainer, toggleReaction,
   }, {
-    useReaction: usingReaction,
+    isReactionEnabled: usingReaction,
     logger,
     userId,
     emojiAllList,
@@ -302,7 +311,6 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
     latestMessageTimeStamp,
     replyType,
   }, {
-    sdk,
     logger,
     messagesDispatcher,
   });
@@ -329,7 +337,7 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
     { logger });
   const updateMessage = useUpdateMessageCallback(
     { currentGroupChannel, messagesDispatcher, onBeforeUpdateUserMessage, isMentionEnabled },
-    { logger, sdk, pubSub },
+    { logger, pubSub },
   );
   const resendMessage = useResendMessageCallback(
     { currentGroupChannel, messagesDispatcher },
@@ -338,7 +346,6 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
   const [messageInputRef, sendMessage] = useSendMessageCallback(
     { currentGroupChannel, onBeforeSendUserMessage, isMentionEnabled },
     {
-      sdk,
       logger,
       pubSub,
       messagesDispatcher,
@@ -347,7 +354,6 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
   const [sendFileMessage] = useSendFileMessageCallback(
     { currentGroupChannel, onBeforeSendFileMessage, imageCompression },
     {
-      sdk,
       logger,
       pubSub,
       messagesDispatcher,
@@ -358,8 +364,8 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
     <ChannelContext.Provider value={{
       // props
       channelUrl,
-      useMessageGrouping,
-      useReaction: usingReaction,
+      isReactionEnabled: usingReaction,
+      isMessageGroupingEnabled,
       showSearchIcon,
       highlightedMessage,
       startingPoint,
@@ -423,6 +429,9 @@ const ChannelProvider: React.FC<ChannelContextProps> = (props: ChannelContextPro
 }
 
 export type UseChannelType = () => ChannelProviderInterface;
-const useChannel: UseChannelType = () => React.useContext(ChannelContext);
+const useChannelContext: UseChannelType = () => React.useContext(ChannelContext);
 
-export { ChannelProvider, useChannel };
+export {
+  ChannelProvider,
+  useChannelContext,
+};

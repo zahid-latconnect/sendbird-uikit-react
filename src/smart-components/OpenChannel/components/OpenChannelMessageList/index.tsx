@@ -3,18 +3,18 @@ import './openchannel-message-list.scss';
 import React, { ReactElement, useRef, useState, useMemo } from 'react';
 import isSameDay from 'date-fns/isSameDay';
 
-// import MessageHoc from './MessageHOC';
 import Icon, { IconTypes, IconColors } from '../../../../ui/Icon';
 
 import PlaceHolder, { PlaceHolderTypes } from '../../../../ui/PlaceHolder';
 import { compareMessagesForGrouping } from '../../context/utils';
-import { useOpenChannel } from '../../context/OpenChannelProvider';
+import { useOpenChannelContext } from '../../context/OpenChannelProvider';
 import OpenChannelMessage from '../OpenChannelMessage';
 import { RenderMessageProps } from '../../../../types';
+import { FileMessage, UserMessage } from '@sendbird/chat/message';
 
 export type OpenchannelMessageListProps = {
-  renderMessage?: (props: RenderMessageProps) => React.ReactNode;
-  renderPlaceHolderEmptyList?: () => React.ReactNode;
+  renderMessage?: (props: RenderMessageProps) => React.ElementType<RenderMessageProps>;
+  renderPlaceHolderEmptyList?: () => React.ReactElement;
 }
 
 function OpenchannelMessageList(
@@ -22,11 +22,11 @@ function OpenchannelMessageList(
   ref: React.RefObject<HTMLDivElement>,
 ): ReactElement {
   const {
-    useMessageGrouping = true,
+    isMessageGroupingEnabled = true,
     allMessages,
     hasMore,
     onScroll,
-  } = useOpenChannel();
+  } = useOpenChannelContext();
   const scrollRef = ref || useRef(null);
   const [showScrollDownButton, setShowScrollDownButton] = useState(false);
 
@@ -37,10 +37,7 @@ function OpenchannelMessageList(
       scrollHeight,
       clientHeight,
     } = element;
-    if (
-      (scrollHeight > scrollTop + clientHeight)
-      && (window.navigator.userAgent.indexOf('MSIE ') < 0) // don't show button in IE
-    ) {
+    if (scrollHeight > scrollTop + clientHeight + 1) {
       setShowScrollDownButton(true);
     } else {
       setShowScrollDownButton(false);
@@ -72,14 +69,17 @@ function OpenchannelMessageList(
   }, [allMessages.length]);
 
   return (
-    <div
-      className="sendbird-openchannel-conversation-scroll"
-      onScroll={handleOnScroll}
-      ref={scrollRef}
-    >
+    <div className="sendbird-openchannel-conversation-scroll">
       <div className="sendbird-openchannel-conversation-scroll__container">
         <div className="sendbird-openchannel-conversation-scroll__container__padding" />
-        <div className={`sendbird-openchannel-conversation-scroll__container__item-container${hasMessage ? '' : '--no-messages'}`}>
+        <div
+          className={[
+            'sendbird-openchannel-conversation-scroll__container__item-container',
+            hasMessage ? '' : 'no-messages',
+          ].join(' ')}
+          onScroll={handleOnScroll}
+          ref={scrollRef}
+        >
           {
             hasMessage
               ? (
@@ -88,18 +88,18 @@ function OpenchannelMessageList(
                   const nextMessage = allMessages[index - 1];
 
                   const previousMessageCreatedAt = previousMessage && previousMessage.createdAt;
-                  const currentCreatedAt = message.createdAt;
+                  const currentCreatedAt = message?.createdAt;
                   // https://stackoverflow.com/a/41855608
                   const hasSeparator = !(previousMessageCreatedAt && (
                     isSameDay(currentCreatedAt, previousMessageCreatedAt)
                   ));
 
-                  const [chainTop, chainBottom] = useMessageGrouping
+                  const [chainTop, chainBottom] = isMessageGroupingEnabled
                     ? compareMessagesForGrouping(previousMessage, message, nextMessage)
                     : [false, false];
                   return (
                     <OpenChannelMessage
-                      key={message?.messageId || message?.reqId}
+                      key={message?.messageId || (message as UserMessage | FileMessage)?.reqId}
                       message={message}
                       chainTop={chainTop}
                       chainBottom={chainBottom}
@@ -117,25 +117,25 @@ function OpenchannelMessageList(
               )
           }
         </div>
-        {
-          showScrollDownButton && (
-            <div
-              className="sendbird-openchannel-conversation-scroll__container__scroll-bottom-button"
-              onClick={scrollToBottom}
-              onKeyDown={scrollToBottom}
-              tabIndex={0}
-              role="button"
-            >
-              <Icon
-                width="24px"
-                height="24px"
-                type={IconTypes.CHEVRON_DOWN}
-                fillColor={IconColors.CONTENT}
-              />
-            </div>
-          )
-        }
       </div>
+      {
+        showScrollDownButton && (
+          <div
+            className="sendbird-openchannel-conversation-scroll__container__scroll-bottom-button"
+            onClick={scrollToBottom}
+            onKeyDown={scrollToBottom}
+            tabIndex={0}
+            role="button"
+          >
+            <Icon
+              width="24px"
+              height="24px"
+              type={IconTypes.CHEVRON_DOWN}
+              fillColor={IconColors.CONTENT}
+            />
+          </div>
+        )
+      }
     </div>
   );
 }

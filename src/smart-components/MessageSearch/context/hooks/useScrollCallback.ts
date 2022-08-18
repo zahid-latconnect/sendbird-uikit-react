@@ -1,21 +1,28 @@
+import type { SendbirdError } from '@sendbird/chat';
+import type { AdminMessage, FileMessage, MessageSearchQuery, UserMessage } from '@sendbird/chat/message';
 import { useCallback } from 'react';
+import { Logger } from '../../../..';
 import * as messageActionTypes from '../dux/actionTypes';
 
 interface MainProps {
-  currentMessageSearchQuery: SendBird.MessageSearchQuery;
+  currentMessageSearchQuery: MessageSearchQuery;
   hasMoreResult: boolean;
   onResultLoaded?: (
-    messages?: Array<SendBird.UserMessage | SendBird.FileMessage | SendBird.AdminMessage>,
-    error?: SendbirdUIKit.SendbirdError,
+    messages?: Array<UserMessage | FileMessage | AdminMessage>,
+    error?: SendbirdError,
   ) => void;
 }
+
+type MessageSearchDispatcherType = { type: string, payload: any };
+
 interface ToolProps {
-  logger: SendbirdUIKit.Logger;
-  messageSearchDispatcher: ({ type: string, payload: any }) => void;
+  logger: Logger;
+  messageSearchDispatcher: (payload: MessageSearchDispatcherType) => void;
 }
+
 export type CallbackReturn = (
   callback: (
-    messages: Array<SendBird.UserMessage | SendBird.FileMessage | SendBird.AdminMessage>,
+    messages: Array<UserMessage | FileMessage | AdminMessage>,
     /* eslint-disable @typescript-eslint/no-explicit-any*/
     error: any,
   ) => void
@@ -30,23 +37,21 @@ function useScrollCallback(
       logger.warning('MessageSearch | useScrollCallback: no more searched results', hasMoreResult);
     }
     if (currentMessageSearchQuery && currentMessageSearchQuery.hasNext) {
-      currentMessageSearchQuery.next((messages, error) => {
-        if (!error) {
-          logger.info('MessageSearch | useScrollCallback: succeeded getting searched messages', messages);
-          messageSearchDispatcher({
-            type: messageActionTypes.GET_NEXT_SEARCHED_MESSAGES,
-            payload: messages,
-          });
-          cb(messages, null);
-          if (onResultLoaded && typeof onResultLoaded === 'function') {
-            onResultLoaded(messages, null);
-          }
-        } else {
-          logger.warning('MessageSearch | useScrollCallback: failed getting searched messages', error);
-          cb(null, error);
-          if (onResultLoaded && typeof onResultLoaded === 'function') {
-            onResultLoaded(null, error);
-          }
+      currentMessageSearchQuery.next().then((messages) => {
+        logger.info('MessageSearch | useScrollCallback: succeeded getting searched messages', messages);
+        messageSearchDispatcher({
+          type: messageActionTypes.GET_NEXT_SEARCHED_MESSAGES,
+          payload: messages,
+        });
+        cb(messages, null);
+        if (onResultLoaded && typeof onResultLoaded === 'function') {
+          onResultLoaded(messages, null);
+        }
+      }).catch((error) => {
+        logger.warning('MessageSearch | useScrollCallback: failed getting searched messages', error);
+        cb(null, error);
+        if (onResultLoaded && typeof onResultLoaded === 'function') {
+          onResultLoaded(null, error);
         }
       });
     } else {

@@ -3,7 +3,7 @@ import './message-list.scss';
 import React, { useState, useMemo } from 'react';
 import isSameDay from 'date-fns/isSameDay';
 
-import { useChannel } from '../../context/ChannelProvider';
+import { useChannelContext } from '../../context/ChannelProvider';
 import PlaceHolder, { PlaceHolderTypes } from '../../../../ui/PlaceHolder';
 import Icon, { IconTypes, IconColors } from '../../../../ui/Icon';
 import { compareMessagesForGrouping } from '../../context/utils';
@@ -13,9 +13,9 @@ import { isAboutSame } from '../../context/utils';
 import uuidv4 from '../../../../utils/uuid';
 
 export type MessageListProps = {
-  renderMessage?: (props: RenderMessageProps) => React.ReactNode;
-  renderPlaceholderEmpty?: () => React.ReactNode;
-  renderCustomSeperator?: () => React.ReactNode;
+  renderMessage?: (props: RenderMessageProps) => React.ReactElement;
+  renderPlaceholderEmpty?: () => React.ReactElement;
+  renderCustomSeparator?: () => React.ReactElement;
 };
 
 const SCROLL_REF_CLASS_NAME = '.sendbird-msg--scroll-ref';
@@ -24,7 +24,7 @@ const MessageList: React.FC<MessageListProps> = (props: MessageListProps) => {
   const {
     renderMessage,
     renderPlaceholderEmpty,
-    renderCustomSeperator,
+    renderCustomSeparator,
   } = props;
   const {
     allMessages,
@@ -32,14 +32,14 @@ const MessageList: React.FC<MessageListProps> = (props: MessageListProps) => {
     setInitialTimeStamp,
     setAnimatedMessageId,
     setHighLightedMessageId,
-    useMessageGrouping,
+    isMessageGroupingEnabled,
     scrollRef,
     onScrollCallback,
     onScrollDownCallback,
     messagesDispatcher,
     messageActionTypes,
     currentGroupChannel,
-  } = useChannel();
+  } = useChannelContext();
   const [scrollBottom, setScrollBottom] = useState(0);
 
   const onScroll = (e) => {
@@ -95,7 +95,11 @@ const MessageList: React.FC<MessageListProps> = (props: MessageListProps) => {
           type: messageActionTypes.MARK_AS_READ,
           payload: { channel: currentGroupChannel },
         });
-        currentGroupChannel.markAsRead();
+        try {
+          currentGroupChannel?.markAsRead();
+        } catch {
+          //
+        }
       }
     }, 500);
   };
@@ -104,7 +108,7 @@ const MessageList: React.FC<MessageListProps> = (props: MessageListProps) => {
     setInitialTimeStamp?.(null);
     setAnimatedMessageId?.(null);
     setHighLightedMessageId?.(null);
-    if (scrollRef?.current?.scrollTop) {
+    if (scrollRef?.current?.scrollTop > -1) {
       scrollRef.current.scrollTop = scrollRef?.current?.scrollHeight - scrollRef?.current?.offsetHeight;
     }
   };
@@ -115,7 +119,7 @@ const MessageList: React.FC<MessageListProps> = (props: MessageListProps) => {
       allMessages.map((m, idx) => {
         const previousMessage = allMessages[idx - 1];
         const nextMessage = allMessages[idx + 1];
-        const [chainTop, chainBottom] = useMessageGrouping
+        const [chainTop, chainBottom] = isMessageGroupingEnabled
           ? compareMessagesForGrouping(previousMessage, m, nextMessage)
           : [false, false];
         const previousMessageCreatedAt = previousMessage?.createdAt;
@@ -143,7 +147,7 @@ const MessageList: React.FC<MessageListProps> = (props: MessageListProps) => {
             hasSeparator={hasSeparator}
             chainTop={chainTop}
             chainBottom={chainBottom}
-            renderCustomSeperator={renderCustomSeperator}
+            renderCustomSeparator={renderCustomSeparator}
             key={m.messageId + uuidv4()}
           />
         );

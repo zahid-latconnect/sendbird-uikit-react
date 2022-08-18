@@ -11,7 +11,8 @@ import replace from '@rollup/plugin-replace';
 import typescript from '@rollup/plugin-typescript';
 import autoprefixer from 'autoprefixer';
 import copy from 'rollup-plugin-copy';
-import { sizeSnapshot } from 'rollup-plugin-size-snapshot';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
+// import { sizeSnapshot } from 'rollup-plugin-size-snapshot';
 
 // config from package.json
 import pkg from './package.json';
@@ -54,7 +55,7 @@ module.exports = ({
         autoprefixer,
       ],
       sourceMap: true,
-      extract: 'index.css',
+      extract: 'dist/index.css',
       extensions: ['.sass', '.scss', '.css'],
     }),
     replace({
@@ -100,13 +101,41 @@ module.exports = ({
       preferBuiltins: true,
     }),
     commonjs(),
-    sizeSnapshot(),
+    nodePolyfills({
+      include: ['buffer', 'stream']
+    }),
     copy({
       verbose: true,
       targets: [
         {
-          src: './src/index.d.ts',
+          src: './scripts/index_d_ts',
           dest: 'dist',
+          rename: 'index.d.ts',
+        },
+        {
+          src: './package-lock.json',
+          dest: 'dist',
+        },
+        {
+          src: './README.md',
+          dest: 'dist',
+        },
+        {
+          src: './LICENSE',
+          dest: 'dist',
+        },
+        {
+          src: './CHANGELOG.md',
+          dest: 'dist',
+        },
+        {
+          src: './package.lock.json',
+          dest: 'dist',
+        },
+        {
+          src: './scripts/package.template.json',
+          dest: 'dist',
+          rename: 'package.json'
         },
       ],
     }),

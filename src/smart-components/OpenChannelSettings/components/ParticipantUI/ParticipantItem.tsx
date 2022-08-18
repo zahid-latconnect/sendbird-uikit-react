@@ -5,6 +5,7 @@ import React, {
   useRef,
   useState,
 } from 'react'
+import type { User } from '@sendbird/chat';
 import { LocalizationContext } from '../../../../lib/LocalizationContext';
 
 import { UserProfileContext } from '../../../../lib/UserProfileContext';
@@ -16,21 +17,29 @@ import Label, { LabelTypography, LabelColors } from '../../../../ui/Label';
 import ParticipantsModal from './ParticipantsModal';
 import UserProfile from '../../../../ui/UserProfile';
 import ContextMenu, { MenuItems } from '../../../../ui/ContextMenu';
-import { useOpenChannelSettings } from '../../context/OpenChannelSettingsProvider';
+import { useOpenChannelSettingsContext } from '../../context/OpenChannelSettingsProvider';
 import useSendbirdStateContext from '../../../../hooks/useSendbirdStateContext';
 
 const SHOWN_MEMBER_MAX = 10;
 
+interface ActionProps {
+  actionRef: React.RefObject<HTMLInputElement>;
+}
 interface UserListItemProps {
-  member: SendBird.User;
+  user: User;
   currentUser?: string;
+  isOperator?: boolean;
+  action?(props: ActionProps): ReactElement;
 }
 
 export const UserListItem: React.FC<UserListItemProps> = ({
-  member,
+  user,
   currentUser,
+  isOperator,
+  action,
 }: UserListItemProps) => {
   const avatarRef = useRef(null);
+  const actionRef = useRef(null);
   const {
     disableUserProfile,
     renderUserProfile,
@@ -48,7 +57,7 @@ export const UserListItem: React.FC<UserListItemProps> = ({
                 }
               }}
               ref={avatarRef}
-              src={member.profileUrl}
+              src={user.profileUrl}
               width={24}
               height={24}
             />
@@ -66,14 +75,14 @@ export const UserListItem: React.FC<UserListItemProps> = ({
               {
                 renderUserProfile
                   ? renderUserProfile({
-                    user: member,
+                    user: user,
                     currentUserId: currentUser,
                     close: closeDropdown,
                   })
                   : (
                     <UserProfile
                       disableMessaging
-                      user={member}
+                      user={user}
                       currentUserId={currentUser}
                       onSuccess={closeDropdown}
                     />
@@ -83,14 +92,50 @@ export const UserListItem: React.FC<UserListItemProps> = ({
           )}
         />
       </div>
-      <Label type={LabelTypography.SUBTITLE_2} color={LabelColors.ONBACKGROUND_1}>
-        {member.nickname || stringSet.NO_NAME}
+      <Label
+        className="sendbird-participants-accordion__member__title"
+        type={LabelTypography.SUBTITLE_2}
+        color={LabelColors.ONBACKGROUND_1}
+      >
+        {user.nickname || stringSet.NO_NAME}
         {
-          (currentUser === member.userId) && (
-            stringSet.CHANNEL_SETTING__MEMBERS__YOU
+          (currentUser === user.userId) && (
+            stringSet.OPEN_CHANNEL_SETTINGS__MEMBERS__YOU
           )
         }
       </Label>
+      { // if there is now nickname, display userId
+        !user.nickname && (
+          <Label
+            className="sendbird-participants-accordion__member__title user-id"
+            type={LabelTypography.CAPTION_3}
+            color={LabelColors.ONBACKGROUND_2}
+          >
+            {user.userId}
+          </Label>
+        )
+      }
+      {
+        isOperator && (
+          <Label
+            className="sendbird-participants-accordion__member__title operator"
+            type={LabelTypography.SUBTITLE_2}
+            color={LabelColors.ONBACKGROUND_2}
+          >
+            {stringSet.OPEN_CHANNEL_SETTINGS__MEMBERS__OPERATOR}
+          </Label>
+        )
+      }
+      {
+        action && (
+          <div
+            className="sendbird-participants-accordion__member__action"
+            ref={actionRef}
+          >
+            { action({ actionRef }) }
+          </div>
+        )
+      }
     </div>
   );
 };
@@ -101,7 +146,7 @@ export interface ParticipantsAccordionProps {
 
 export default function ParticipantsAccordion(props: ParticipantsAccordionProps): ReactElement {
   const maxMembers = props?.maxMembers || SHOWN_MEMBER_MAX;
-  const { channel } = useOpenChannelSettings();
+  const { channel } = useOpenChannelSettingsContext();
   const globalState = useSendbirdStateContext();
   const currentUser = globalState?.config?.userId;
   const [participants, setParticipants] = useState([]);
@@ -109,14 +154,11 @@ export default function ParticipantsAccordion(props: ParticipantsAccordionProps)
   const { stringSet } = useContext(LocalizationContext);
 
   useEffect(() => {
-    if (!channel || !channel.createParticipantListQuery) {
+    if (!channel || !channel?.createParticipantListQuery) {
       return;
     }
-    const participantListQuery = channel.createParticipantListQuery();
-    participantListQuery.next((participantList, error) => {
-      if (error) {
-        return;
-      }
+    const participantListQuery = channel?.createParticipantListQuery({});
+    participantListQuery.next().then((participantList) => {
       setParticipants(participantList);
     });
   }, [channel]);
@@ -148,7 +190,7 @@ export default function ParticipantsAccordion(props: ParticipantsAccordionProps)
             {
               participants.slice(0, maxMembers).map((p) => (
                 <UserListItem
-                  member={p}
+                  user={p}
                   currentUser={currentUser}
                   key={p.userId}
                 />

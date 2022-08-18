@@ -1,9 +1,7 @@
-import './open-channel-input.scss';
-
 import React, { useContext } from 'react';
 import { LocalizationContext } from '../../../../lib/LocalizationContext';
 import MessageInput from '../../../../ui/MessageInput';
-import { useOpenChannel } from '../../context/OpenChannelProvider';
+import { useOpenChannelContext } from '../../context/OpenChannelProvider';
 
 const MessageInputWrapper = (props, ref: React.RefObject<HTMLInputElement>): JSX.Element => {
   const {
@@ -11,7 +9,7 @@ const MessageInputWrapper = (props, ref: React.RefObject<HTMLInputElement>): JSX
     disabled,
     handleSendMessage,
     handleFileUpload,
-  } = useOpenChannel();
+  } = useOpenChannelContext();
 
   const channel = currentOpenChannel;
   if (!channel) {

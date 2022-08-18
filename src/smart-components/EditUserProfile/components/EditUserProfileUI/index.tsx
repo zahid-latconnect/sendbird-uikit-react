@@ -6,7 +6,7 @@ import React, {
   useState,
   useContext,
 } from 'react';
-import { useEditUserProfileProvider } from '../../context/EditUserProfIleProvider';
+import { useEditUserProfileContext } from '../../context/EditUserProfIleProvider';
 
 import Modal from '../../../../ui/Modal';
 import { LocalizationContext } from '../../../../lib/LocalizationContext';
@@ -22,7 +22,7 @@ import { noop } from '../../../../utils/utils';
 import * as userActions from '../../../../lib/dux/user/actionTypes';
 
 export default function EditUserProfile(): ReactElement {
-  const editProfileProps = useEditUserProfileProvider();
+  const editProfileProps = useEditUserProfileContext();
   const store = useSendbirdStateContext();
   const hiddenInputRef = useRef(null);
   const inputRef = useRef(null);
@@ -56,7 +56,10 @@ export default function EditUserProfile(): ReactElement {
           }
           return;
         }
-        sdk?.updateCurrentUserInfoWithProfileImage(inputRef?.current?.value, newFile, (updatedUser) => {
+        sdk?.updateCurrentUserInfo({
+          nickname: inputRef?.current?.value,
+          profileImage: newFile,
+        }).then((updatedUser) => {
           userDispatcher({ type: userActions.UPDATE_USER_INFO, payload: updatedUser });
           if (onEditProfile && typeof onEditProfile === 'function') {
             onEditProfile(updatedUser);

@@ -1,5 +1,5 @@
 import React from "react";
-import SBProvider from "@sendbird/uikit-react/SendbirdProvider";
+import SBProvider from "./dist/SendbirdProvider";
 import "@sendbird/uikit-react/dist/index.css";
 
 import CustomizedApp from "./CustomizedApp";

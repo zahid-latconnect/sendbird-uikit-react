@@ -1,4 +1,4 @@
-import SendBird from "sendbird";
+import type { User } from "@sendbird/chat";
 import type { Locale } from "date-fns";
 
 import {
@@ -12,6 +12,8 @@ export default interface AppProps {
   appId: string;
   userId: string;
   accessToken?: string;
+  customApiHost?: string,
+  customWebSocketHost?: string,
   theme?: 'light' | 'dark';
   userListQuery?(): UserListQuery;
   nickname?: string;
@@ -21,10 +23,10 @@ export default interface AppProps {
   disableUserProfile?: boolean;
   showSearchIcon?: boolean;
   renderUserProfile?: (props: RenderUserProfileProps) => React.ReactNode;
-  onProfileEditSuccess?(user: SendBird.User): void;
+  onProfileEditSuccess?(user: User): void;
   config?: SendBirdProviderConfig;
-  useReaction?: boolean;
-  useMessageGrouping?: boolean;
+  isReactionEnabled?: boolean;
+  isMessageGroupingEnabled?: boolean;
   stringSet?: Record<string, string>;
   colorSet?: Record<string, string>;
   imageCompression?: {

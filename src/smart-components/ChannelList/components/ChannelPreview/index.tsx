@@ -1,7 +1,8 @@
-import React from 'react';
-import SendBird from 'sendbird';
-
 import './channel-preview.scss';
+
+import React from 'react';
+import type { GroupChannel } from '@sendbird/chat/groupChannel';
+import type { FileMessage, UserMessage } from '@sendbird/chat/message';
 
 import ChannelAvatar from '../../../../ui/ChannelAvatar';
 import Badge from '../../../../ui/Badge';
@@ -16,13 +17,14 @@ import MentionUserLabel from '../../../../ui/MentionUserLabel';
 import { useChannelListContext } from '../../context/ChannelListProvider';
 import { TypingIndicatorText } from '../../../Channel/components/TypingIndicator';
 import MessageStatus from '../../../../ui/MessageStatus';
+import { isEditedMessage } from '../../../../utils';
 
 interface ChannelPreviewInterface {
-  channel: SendBird.GroupChannel;
+  channel: GroupChannel;
   isActive?: boolean;
   isTyping?: boolean;
   onClick: () => void;
-  renderChannelAction: (props: { channel: SendBird.GroupChannel }) => React.ReactNode;
+  renderChannelAction: (props: { channel: GroupChannel }) => React.ReactNode;
   tabIndex: number;
 }
 
@@ -43,11 +45,12 @@ const ChannelPreview: React.FC<ChannelPreviewInterface> = ({
   const userId = sbState?.stores?.userStore?.user?.userId;
   const theme = sbState?.config?.theme;
   const isMentionEnabled = sbState?.config?.isMentionEnabled;
-  const { isBroadcast, isFrozen } = channel;
+  const isFrozen = channel?.isFrozen || false;
+  const isBroadcast = channel?.isBroadcast || false;
   const isChannelTyping = isTypingIndicatorEnabled && isTyping;
   const isMessageStatusEnabled = isMessageReceiptStatusEnabled
     && (channel?.lastMessage?.messageType === 'user' || channel?.lastMessage?.messageType === 'file')
-    && channel?.lastMessage?.sender?.userId === userId;
+    && (channel?.lastMessage as UserMessage | FileMessage)?.sender?.userId === userId;
   return (
     <div
       className={[
@@ -118,7 +121,7 @@ const ChannelPreview: React.FC<ChannelPreviewInterface> = ({
                 <MessageStatus
                   className="sendbird-channel-preview__content__upper__last-message-at"
                   channel={channel}
-                  message={channel?.lastMessage as SendBird.UserMessage | SendBird.FileMessage}
+                  message={channel?.lastMessage as UserMessage | FileMessage}
                 />
               )
               : (
@@ -139,15 +142,27 @@ const ChannelPreview: React.FC<ChannelPreviewInterface> = ({
             color={LabelColors.ONBACKGROUND_3}
           >
             {
-              isChannelTyping
-                ? <TypingIndicatorText members={channel?.getTypingMembers()} />
-                : utils.getLastMessage(channel)
+              isChannelTyping && (
+                <TypingIndicatorText members={channel?.getTypingUsers()} />
+              )
+            }
+            {
+              !isChannelTyping && (
+                utils.getLastMessage(channel) + (isEditedMessage(channel?.lastMessage as UserMessage | FileMessage) ? ` ${stringSet.MESSAGE_EDITED}` : '')
+              )
             }
           </Label>
           <div className="sendbird-channel-preview__content__lower__unread-message-count">
             {
               (isMentionEnabled && channel?.unreadMentionCount > 0)
-                ? <MentionUserLabel color="purple">@</MentionUserLabel>
+                ? (
+                  <MentionUserLabel
+                    className="sendbird-channel-preview__content__lower__unread-message-count__mention"
+                    color="purple"
+                  >
+                    {'@'}
+                  </MentionUserLabel>
+                )
                 : null
             }
             {
@@ -161,7 +176,7 @@ const ChannelPreview: React.FC<ChannelPreviewInterface> = ({
       <div
         className="sendbird-channel-preview__action"
       >
-        { renderChannelAction({ channel }) }
+        {renderChannelAction({ channel })}
       </div>
     </div>
   );

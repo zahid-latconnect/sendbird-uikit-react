@@ -9,8 +9,8 @@ import
 import Icon, { IconTypes, IconColors } from '../../../../ui/Icon';
 import Badge from '../../../../ui/Badge';
 
-import MemberList from '../AdminPanel/MemberList';
-import { useChannelSettings } from '../../context/ChannelSettingsProvider';
+import MemberList from '../ModerationPanel/MemberList';
+import { useChannelSettingsContext } from '../../context/ChannelSettingsProvider';
 
 const kFormatter = (num: number): string|number => {
   return Math.abs(num) > 999
@@ -21,7 +21,7 @@ const kFormatter = (num: number): string|number => {
 const UserPanel: React.FC = () => {
   const { stringSet } = useContext(LocalizationContext);
   const [showAccordion, setShowAccordion] = useState(false);
-  const { channel } = useChannelSettings();
+  const { channel } = useChannelSettingsContext();
   return (
     <>
       <div
@@ -47,7 +47,7 @@ const UserPanel: React.FC = () => {
           color={LabelColors.ONBACKGROUND_1}
         >
           {stringSet.CHANNEL_SETTING__MEMBERS__TITLE}
-          <Badge count={kFormatter(channel.memberCount)} />
+          <Badge count={kFormatter(channel?.memberCount)} />
         </Label>
         <Icon
           className={[

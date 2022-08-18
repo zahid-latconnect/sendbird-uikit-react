@@ -6,7 +6,7 @@ import * as utils from '../../context/utils';
 import MessageInput from '../../../../ui/MessageInput';
 import QuoteMessageInput from '../../../../ui/QuoteMessageInput';
 import { LocalizationContext } from '../../../../lib/LocalizationContext';
-import { useChannel } from '../../context/ChannelProvider';
+import { useChannelContext } from '../../context/ChannelProvider';
 import useSendbirdStateContext from '../../../../hooks/useSendbirdStateContext';
 import SuggestedMentionList from '../SuggestedMentionList';
 import { MessageInputKeys } from '../../../../ui/MessageInput/const';
@@ -22,7 +22,7 @@ const MessageInputWrapper = (): JSX.Element => {
     messageInputRef,
     renderUserMentionItem,
     sendCommand,
-  } = useChannel();
+  } = useChannelContext();
   const globalStore = useSendbirdStateContext();
   const channel = currentGroupChannel;
 
@@ -43,9 +43,24 @@ const MessageInputWrapper = (): JSX.Element => {
     || utils.isDisabledBecauseMuted(channel)
     || !isOnline;
   const isOperator = utils.isOperator(channel);
-  const { isBroadcast } = channel;
+  const isBroadcast = channel?.isBroadcast;
 
-  const displaySuggestedMentionList = (isMentionEnabled && mentionNickname.length > 0);
+  const displaySuggestedMentionList = isOnline
+    && isMentionEnabled
+    && mentionNickname.length > 0
+    && !utils.isDisabledBecauseFrozen(channel)
+    && !utils.isDisabledBecauseMuted(channel);
+
+  // Reset when channel changes
+  useEffect(() => {
+    setMentionNickname('');
+    setMentionedUsers([]);
+    setMentionedUserIds([]);
+    setSelectedUser(null);
+    setMentionSuggestedUsers([]);
+    setAbleMention(true);
+    setMessageInputEvent(null);
+  }, [channel?.url]);
 
   useEffect(() => {
     if (mentionedUsers?.length >= maxUserMentionCount) {

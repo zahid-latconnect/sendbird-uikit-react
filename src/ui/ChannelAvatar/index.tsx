@@ -1,5 +1,7 @@
-import React, { useMemo } from 'react';
 import './index.scss';
+import React, { useMemo } from 'react';
+
+import type { GroupChannel } from '@sendbird/chat/groupChannel';
 
 import Avatar from '../Avatar/index';
 import Icon, { IconTypes, IconColors } from '../Icon';
@@ -7,7 +9,7 @@ import Icon, { IconTypes, IconColors } from '../Icon';
 import * as utils from './utils';
 
 interface Props {
-  channel: SendBird.GroupChannel;
+  channel: GroupChannel;
   userId: string;
   theme: string;
   width?: number,
@@ -51,7 +53,7 @@ function ChannelAvatar({
               src={utils.getChannelAvatarSource(channel, userId)}
               width={width}
               height={height}
-              alt={channel.name}
+              alt={channel?.name}
             />
           )
       )
@@ -61,7 +63,7 @@ function ChannelAvatar({
           src={utils.getChannelAvatarSource(channel, userId)}
           width={`${width}px`}
           height={`${height}px`}
-          alt={channel.name}
+          alt={channel?.name}
         />
       )
   ),[channel?.members, channel?.coverUrl, theme]);

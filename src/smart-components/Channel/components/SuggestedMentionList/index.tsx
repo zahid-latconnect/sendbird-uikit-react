@@ -1,23 +1,25 @@
-import React, { useState, useEffect, useContext } from 'react';
-import SendBird from 'sendbird';
 import './index.scss';
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import type { User } from '@sendbird/chat';
+import type { Member } from '@sendbird/chat/groupChannel';
 
 import Label, { LabelTypography, LabelColors } from '../../../../ui/Label';
 import Icon, { IconTypes, IconColors } from '../../../../ui/Icon';
 import SuggestedUserMentionItem from './SuggestedUserMentionItem';
-import { useChannel } from '../../context/ChannelProvider';
+import { useChannelContext } from '../../context/ChannelProvider';
 import useSendbirdStateContext from '../../../../hooks/useSendbirdStateContext';
 import { LocalizationContext } from '../../../../lib/LocalizationContext';
 import { MAX_USER_MENTION_COUNT, MAX_USER_SUGGESTION_COUNT, USER_MENTION_TEMP_CHAR } from '../../context/const';
 import { MessageInputKeys } from '../../../../ui/MessageInput/const';
+import uuidv4 from '../../../../utils/uuid';
 
 export interface SuggestedMentionListProps {
   targetNickname: string;
   memberListQuery?: Record<string, string>;
-  onUserItemClick?: (member: SendBird.User) => void;
-  onFocusItemChange?: (member: SendBird.User) => void;
-  onFetchUsers?: (users: Array<SendBird.User>) => void;
-  renderUserMentionItem?: (props: { user: SendBird.User }) => JSX.Element;
+  onUserItemClick?: (member: User) => void;
+  onFocusItemChange?: (member: User) => void;
+  onFetchUsers?: (users: Array<User>) => void;
+  renderUserMentionItem?: (props: { user: User }) => JSX.Element;
   ableAddMention: boolean;
   maxMentionCount?: number;
   maxSuggestionCount?: number;
@@ -42,14 +44,14 @@ function SuggestedMentionList(props: SuggestedMentionListProps): JSX.Element {
   const { config, stores } = useSendbirdStateContext();
   const { logger } = config;
   const currentUserId = stores?.sdkStore?.sdk?.currentUser?.userId || '';
-  const { currentGroupChannel } = useChannel();
+  const { currentGroupChannel } = useChannelContext();
+  const scrollRef = useRef(null);
   const { stringSet } = useContext(LocalizationContext);
   const [timer, setTimer] = useState(null);
   const [searchString, setSearchString] = useState('');
   const [lastSearchString, setLastSearchString] = useState('');
-  const [currentUser, setCurrentUser] = useState<SendBird.User>(null);
-  const [mouseOverUser, setMouseOverUser] = useState<SendBird.User>(null);
-  const [currentMemberList, setCurrentMemberList] = useState<Array<SendBird.Member>>([]);
+  const [currentUser, setCurrentUser] = useState<User>(null);
+  const [currentMemberList, setCurrentMemberList] = useState<Array<Member>>([]);
 
   useEffect(() => {
     clearTimeout(timer);
@@ -88,7 +90,7 @@ function SuggestedMentionList(props: SuggestedMentionListProps): JSX.Element {
 
   /* Fetch member list */
   useEffect(() => {
-    if (!currentGroupChannel || !currentGroupChannel.createMemberListQuery || !ableAddMention) {
+    if (!currentGroupChannel?.createMemberListQuery) {
       logger.warning('SuggestedMentionList: Creating member list query failed');
       return;
     }
@@ -97,46 +99,55 @@ function SuggestedMentionList(props: SuggestedMentionListProps): JSX.Element {
       return;
     }
 
-    const query = currentGroupChannel.createMemberListQuery();
-    query.limit = maxSuggestionCount;
-    query.nicknameStartsWithFilter = searchString.slice(USER_MENTION_TEMP_CHAR.length);
-    // Add member list query for customization
-    query.next((memberList, error) => {
-      if (error) {
-        logger.error('SuggestedMentionList: Fetching member list failed', error);
-      }
-      if (memberList.length < 1) {
-        logger.info('SuggestedMentionList: Fetched member list is empty');
-      } else {
-        logger.info('SuggestedMentionList: Fetching member list succeeded', { memberListQuery: query, memberList });
-        setCurrentUser(memberList[0]);
-      }
-      setLastSearchString(searchString);
-      onFetchUsers(memberList);
-      setCurrentMemberList(memberList.filter((member) => currentUserId !== member?.userId));
+    const query = currentGroupChannel?.createMemberListQuery({
+      limit: maxSuggestionCount + 1,  // because current user could be included
+      nicknameStartsWithFilter: searchString.slice(USER_MENTION_TEMP_CHAR.length),
     });
+    // Add member list query for customization
+    query.next()
+      .then((memberList) => {
+        const suggestingMembers = memberList
+          .filter((member) => currentUserId !== member?.userId)
+          .slice(0, maxSuggestionCount);
+        if (suggestingMembers.length < 1) {
+          logger.info('SuggestedMentionList: Fetched member list is empty');
+        } else {
+          logger.info('SuggestedMentionList: Fetching member list succeeded', { memberListQuery: query, memberList: suggestingMembers });
+          setCurrentUser(suggestingMembers[0]);
+        }
+        setLastSearchString(searchString);
+        onFetchUsers(suggestingMembers);
+        setCurrentMemberList(suggestingMembers);
+      })
+      .catch((error) => {
+        if (error) {
+          logger.error('SuggestedMentionList: Fetching member list failed', error);
+        }
+      });
   }, [currentGroupChannel?.url, searchString]);
+
+  if (!ableAddMention && currentMemberList.length === 0) {
+    return null;
+  }
 
   return (
     <div
       className="sendbird-mention-suggest-list"
-      onMouseLeave={() => {
-        if (mouseOverUser) {
-          setCurrentUser(mouseOverUser);
-        }
-      }}
+      key="sendbird-mention-suggest-list"
+      ref={scrollRef}
     >
       {
         ableAddMention && currentMemberList?.map((member) => (
           <SuggestedUserMentionItem
-            key={member?.nickname}
+            key={member?.userId || uuidv4()}
             member={member}
             isFocused={member?.userId === currentUser?.userId}
-            onClick={() => {
+            parentScrollRef={scrollRef}
+            onClick={({ member }) => {
               onUserItemClick(member);
             }}
-            onMouseOver={() => {
-              setMouseOverUser(member);
+            onMouseOver={({ member }) => {
+              setCurrentUser(member);
             }}
             renderUserMentionItem={renderUserMentionItem}
           />
@@ -149,6 +160,8 @@ function SuggestedMentionList(props: SuggestedMentionListProps): JSX.Element {
               className="sendbird-mention-suggest-list__notice-item__icon"
               type={IconTypes.INFO}
               fillColor={IconColors.ON_BACKGROUND_2}
+              width="20px"
+              height="20px"
             />
             <Label
               className="sendbird-mention-suggest-list__notice-item__text"

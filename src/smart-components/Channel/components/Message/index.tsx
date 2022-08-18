@@ -1,17 +1,18 @@
 import React, {
+  useRef,
+  useMemo,
   useState,
   useEffect,
-  useRef,
   useLayoutEffect,
-  useMemo,
 } from 'react';
+import type { FileMessage } from '@sendbird/chat/message';
 import format from 'date-fns/format';
 
 import SuggestedMentionList from '../SuggestedMentionList';
 import useSendbirdStateContext from '../../../../hooks/useSendbirdStateContext';
-import { useChannel } from '../../context/ChannelProvider';
+import { useChannelContext } from '../../context/ChannelProvider';
 import { getClassName } from '../../../../utils';
-import { isDisabledBecauseFrozen } from '../../context/utils';
+import { isDisabledBecauseFrozen, isDisabledBecauseMuted } from '../../context/utils';
 import { MAX_USER_MENTION_COUNT, MAX_USER_SUGGESTION_COUNT } from '../../context/const';
 
 import DateSeparator from '../../../../ui/DateSeparator';
@@ -31,20 +32,20 @@ type MessageUIProps = {
   chainBottom?: boolean;
   handleScroll: () => void;
   // for extending
-  renderMessage?: (props: RenderMessageProps) => React.ReactNode;
-  renderCustomSeperator?: () => React.ReactNode;
-  renderEditInput?: () => React.ReactNode;
-  renderMessageContent?: () => React.ReactNode;
+  renderMessage?: (props: RenderMessageProps) => React.ReactElement;
+  renderCustomSeparator?: () => React.ReactElement;
+  renderEditInput?: () => React.ReactElement;
+  renderMessageContent?: () => React.ReactElement;
 };
 
-const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
+const Message = (props: MessageUIProps): React.FC<MessageUIProps> | React.ReactElement => {
   const {
     message,
     hasSeparator,
     chainTop,
     chainBottom,
     handleScroll,
-    renderCustomSeperator,
+    renderCustomSeparator,
     renderEditInput,
     renderMessage,
     renderMessageContent,
@@ -57,11 +58,13 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
     isOnline,
     isMentionEnabled,
     userMention,
+    appManifests
   } = globalStore?.config;
   const maxUserMentionCount = userMention?.maxMentionCount || MAX_USER_MENTION_COUNT;
   const maxUserSuggestionCount = userMention?.maxSuggestionCount || MAX_USER_SUGGESTION_COUNT;
 
   const {
+    initialized,
     currentGroupChannel,
     highLightedMessageId,
     setHighLightedMessageId,
@@ -70,7 +73,7 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
     updateMessage,
     scrollToMessage,
     replyType,
-    useReaction,
+    isReactionEnabled,
     toggleReaction,
     emojiContainer,
     nicknamesMap,
@@ -78,7 +81,7 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
     resendMessage,
     renderUserMentionItem,
     sendCommand
-  } = useChannel();
+  } = useChannelContext();
 
   const [showEdit, setShowEdit] = useState(false);
   const [showRemove, setShowRemove] = useState(false);
@@ -94,8 +97,15 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
   const [ableMention, setAbleMention] = useState(true);
   const editMessageInputRef = useRef(null);
   const useMessageScrollRef = useRef(null);
-
-  const displaySuggestedMentionList = (isMentionEnabled && mentionNickname.length > 0);
+  const displaySuggestedMentionList = isOnline
+    && isMentionEnabled
+    && mentionNickname.length > 0
+    && !isDisabledBecauseFrozen(currentGroupChannel)
+    && !isDisabledBecauseMuted(currentGroupChannel);
+  const disabled = !initialized
+    || isDisabledBecauseFrozen(currentGroupChannel)
+    || isDisabledBecauseMuted(currentGroupChannel)
+    || !isOnline;
 
   useEffect(() => {
     if (mentionedUsers?.length >= maxUserMentionCount) {
@@ -161,6 +171,12 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
       chainBottom,
     });
   }, [message, renderMessage]);
+  const renderedCustomSeparator = useMemo(() => {
+    if (renderCustomSeparator) {
+      return renderCustomSeparator?.();
+    }
+    return null;
+  }, [message, renderCustomSeparator]);
 
   if (renderedMessage) {
     return (
@@ -175,7 +191,7 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
         {/* date-separator */}
         {
           // TODO: Add message instance as a function parameter
-          hasSeparator && renderCustomSeperator?.() || (
+          hasSeparator && (renderedCustomSeparator || (
             <DateSeparator>
               <Label type={LabelTypography.CAPTION_2} color={LabelColors.ONBACKGROUND_2}>
                 {format(message.createdAt, 'MMMM dd, yyyy', {
@@ -183,7 +199,7 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
                 })}
               </Label>
             </DateSeparator>
-          )
+          ))
         }
         {renderedMessage}
       </div>
@@ -221,9 +237,11 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
         }
         <MessageInput
           isEdit
+
           test="hey"
           appManifests={appManifests}
-          disabled={isDisabledBecauseFrozen(currentGroupChannel)}
+
+          disabled={disabled}
           ref={editMessageInputRef}
           mentionSelectedUser={selectedUser}
           isMentionEnabled={isMentionEnabled}
@@ -237,7 +255,13 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
             });
             setShowEdit(false);
           }}
-          onCancelEdit={() => { setShowEdit(false); }}
+          onCancelEdit={() => {
+            setMentionNickname('');
+            setMentionedUsers([]);
+            setMentionedUserIds([]);
+            setMentionSuggestedUsers([])
+            setShowEdit(false);
+          }}
           onUserMentioned={(user) => {
             if (selectedUser?.userId === user?.userId) {
               setSelectedUser(null);
@@ -276,7 +300,7 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
     >
       {/* date-separator */}
       {
-        hasSeparator && (renderCustomSeperator?.() || (
+        hasSeparator && (renderedCustomSeparator || (
           <DateSeparator>
             <Label type={LabelTypography.CAPTION_2} color={LabelColors.ONBACKGROUND_2}>
               {format(message.createdAt, 'MMMM dd, yyyy', {
@@ -298,7 +322,7 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
             disabled={!isOnline}
             chainTop={chainTop}
             chainBottom={chainBottom}
-            useReaction={useReaction}
+            isReactionEnabled={isReactionEnabled}
             replyType={replyType}
             nicknamesMap={nicknamesMap}
             emojiContainer={emojiContainer}
@@ -324,7 +348,7 @@ const Message: React.FC<MessageUIProps> = (props: MessageUIProps) => {
       {
         showFileViewer && (
           <FileViewer
-            message={message as SendbirdUIKit.ClientFileMessage}
+            message={message as FileMessage}
             onCancel={() => setShowFileViewer(false)}
           />
         )

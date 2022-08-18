@@ -1,16 +1,19 @@
 import React, { ReactElement, useEffect, useState } from 'react';
+
 import withSendBird from '../../../lib/SendbirdSdkContext';
-import sendBirdSelectors from '../../../lib/selectors';
+import * as sendbirdSelectors from '../../../lib/selectors';
 
 import './streaming-channel-list.scss';
 import OpenChannelPreview from './OpenChannelPreview';
 import Profile from './Profile';
+import { OpenChannel, SendbirdOpenChat } from '@sendbird/chat/openChannel';
+import { User } from '@sendbird/chat';
 
 interface Props {
-  sdk: SendBird.SendBirdInstance;
-  user: SendBird.User;
+  sdk: SendbirdOpenChat;
+  user: User;
   currentChannelUrl: string;
-  setCurrentChannel(channel: SendBird.OpenChannel): void;
+  setCurrentChannel(channel: OpenChannel): void;
 }
 
 function StreamingChannelList({
@@ -19,24 +22,20 @@ function StreamingChannelList({
   currentChannelUrl,
   setCurrentChannel,
 }: Props): ReactElement {
-  const [channels, setChannels] = useState<Array<SendBird.OpenChannel>>([]);
+  const [channels, setChannels] = useState<Array<OpenChannel>>([]);
   useEffect(() => {
-    if (!sdk || !sdk.OpenChannel) {
+    if (!sdk || !sdk.openChannel) {
       return;
     }
-    const openChannelListQuery = sdk.OpenChannel.createOpenChannelListQuery();
+    const openChannelListQuery = sdk.openChannel.createOpenChannelListQuery();
     // @ts-ignore: Unreachable code error
     openChannelListQuery.customTypes = ['SB_LIVE_TYPE'];
-    openChannelListQuery.next(function(openChannels, error) {
-      if (error) {
-        return;
-      }
+    openChannelListQuery.next().then((openChannels) => {
       setChannels(openChannels);
       if (openChannels.length > 0) {
         setCurrentChannel(openChannels[0]);
       }
     });
-
   }, [sdk]);
 
   return (
@@ -83,7 +82,7 @@ function StreamingChannelList({
 
 export default withSendBird(StreamingChannelList, (store) => {
   return {
-    sdk: sendBirdSelectors.getSdk(store),
+    sdk: sendbirdSelectors.getSdk(store),
     user: store.stores.userStore.user,
   };
 });

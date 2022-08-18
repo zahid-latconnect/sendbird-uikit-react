@@ -1,6 +1,6 @@
 import React, { useState, useRef, useContext } from 'react';
 
-import { useChannelSettings } from '../../context/ChannelSettingsProvider';
+import { useChannelSettingsContext } from '../../context/ChannelSettingsProvider';
 import { LocalizationContext } from '../../../../lib/LocalizationContext';
 import useSendbirdStateContext from '../../../../hooks/useSendbirdStateContext';
 
@@ -29,7 +29,7 @@ const EditDetails: React.FC<EditDetailsProps> = (props: EditDetailsProps) => {
     onChannelModified,
     onBeforeUpdateChannel,
     setChannelUpdateId,
-  } = useChannelSettings();
+  } = useChannelSettingsContext();
   const title = channel?.name;
 
   const state = useSendbirdStateContext();
@@ -65,25 +65,24 @@ const EditDetails: React.FC<EditDetailsProps> = (props: EditDetailsProps) => {
         });
         if (onBeforeUpdateChannel) {
           logger.info('ChannelSettings: onBeforeUpdateChannel');
-          const params = onBeforeUpdateChannel(currentTitle, currentImg, channel.data);
-          channel.updateChannel(params, (groupChannel) => {
+          const params = onBeforeUpdateChannel(currentTitle, currentImg, channel?.data);
+          channel?.updateChannel(params).then((groupChannel) => {
             onChannelModified?.(groupChannel);
             setChannelUpdateId(uuidv4());
             onSubmit();
           });
         } else {
           logger.info('ChannelSettings: normal');
-          channel.updateChannel(
-            currentTitle,
-            currentImg,
-            channel.data,
-            (groupChannel) => {
-              logger.info('ChannelSettings: Channel information updated', groupChannel);
-              onChannelModified?.(groupChannel);
-              setChannelUpdateId(uuidv4());
-              onSubmit();
-            },
-          );
+          channel?.updateChannel({
+            coverImage: currentImg,
+            name: currentTitle,
+            data: channel?.data || '',
+          }).then((groupChannel) => {
+            logger.info('ChannelSettings: Channel information updated', groupChannel);
+            onChannelModified?.(groupChannel);
+            setChannelUpdateId(uuidv4());
+            onSubmit();
+          });
         }
       }}
       type={ButtonType.PRIMARY}

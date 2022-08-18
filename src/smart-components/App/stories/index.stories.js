@@ -10,7 +10,7 @@ import Channel from '../../Channel';
 import ChannelSettings from '../../ChannelSettings';
 import MessageSearch from '../../MessageSearch';
 import { withSendBird } from '../../..';
-import { sendBirdSelectors } from '../../..';
+import { sendbirdSelectors } from '../../..';
 import { fitPageSize } from './utils';
 
 const appId = process.env.STORYBOOK_APP_ID;
@@ -24,7 +24,7 @@ export const versionInfo = () => {
   return (
     <>
       <div>UIKit: {pkg.version}</div>
-      <div>Sendbird SDK: {pkg.dependencies.sendbird.version}</div>
+      <div>Sendbird SDK: {pkg.dependencies['@sendbird/chat'].version}</div>
       <button onClick={() => { setshowAll(!showAll) }}>Show all</button>
       {
         showAll && (
@@ -48,7 +48,12 @@ export const basicSDK = () => fitPageSize(
     userId={userId}
     nickname={userId}
     showSearchIcon
-  /*config={{ logLevel: 'all' }}*/
+    replyType="QUOTE_REPLY"
+    isMentionEnabled
+    isReactionEnabled
+    isTypingIndicatorEnabledOnChannelList
+    isMessageReceiptStatusEnabledOnChannelList
+    /*config={{ logLevel: 'all' }}*/
   />
 );
 
@@ -74,10 +79,15 @@ export const chatApps = () => fitPageSize(
 export const darkTheme = () => fitPageSize(
   <App
     appId={appId}
-    userId={'leo.sub'}
-    theme={'dark'}
+    userId={userId}
+    nickname={userId}
+    theme="dark"
     showSearchIcon
+    replyType="QUOTE_REPLY"
     config={{ logLevel: 'all' }}
+    isMentionEnabled
+    isTypingIndicatorEnabledOnChannelList
+    isMessageReceiptStatusEnabledOnChannelList
   />
 );
 
@@ -90,6 +100,8 @@ export const login = () => {
   const [profileEdit, setProfileEdit] = useState(true);
   const [useReply, setUseReply] = useState(true);
   const [useMention, setUseMention] = useState(true);
+  const [isTypingOnChannelListEnabled, setIsTypingOnChannelListEnabled] = useState(true);
+  const [isMessageStatusOnChannelListEnabled, setIsMessageStatusOnChannelListEnabled] = useState(true);
   return isLoginPage
     ? fitPageSize(
       <div
@@ -169,6 +181,26 @@ export const login = () => {
           onClick={() => setUseMention(!useMention)}
         />
         <input
+          className="input__toggle-typing-indicator-on-channel-list"
+          type="button"
+          value={
+            isTypingOnChannelListEnabled
+              ? 'Use typing indicator on ChannelList'
+              : 'Not use typing indicator on ChannelList'
+          }
+          onClick={() => setIsTypingOnChannelListEnabled(!isTypingOnChannelListEnabled)}
+        />
+        <input
+          className="input__toggle-message-status-on-channel-list"
+          type="button"
+          value={
+            isMessageStatusOnChannelListEnabled
+              ? 'Use message status on ChannelList'
+              : 'Not use message status on ChannelList'
+          }
+          onClick={() => setIsMessageStatusOnChannelListEnabled(!isMessageStatusOnChannelListEnabled)}
+        />
+        <input
           className="login-submit"
           type="submit"
           value="Submit"
@@ -185,7 +217,10 @@ export const login = () => {
         isMentionEnabled={useMention}
         showSearchIcon={messageSearch}
         allowProfileEdit={profileEdit}
+        config={{ logLevel: 'all' }}
         replyType={useReply ? 'QUOTE_REPLY' : 'NONE'}
+        isTypingIndicatorEnabledOnChannelList
+        isMessageReceiptStatusEnabledOnChannelList
       />
     )
 };
@@ -206,7 +241,7 @@ export const updateProfile = () => {
   );
 };
 
-const age = 73;
+const age = 75;
 const array = [
   `hoon${age}1`,
   `hoon${age}2`,
@@ -259,9 +294,9 @@ export const user2 = () => fitPageSize(
     showSearchIcon
     allowProfileEdit
     profileUrl={addProfile}
-    config={{ logLevel: 'all', userMention: { maxMentionCount: 2, maxSuggestionCount: 5 } }}
+    config={{ logLevel: 'all' }}
     replyType="QUOTE_REPLY"
-    useMessageGrouping={false}
+    disableAutoSelect
     imageCompression={{
       compressionRate: 0.5,
       resizingWidth: 100,
@@ -283,6 +318,7 @@ export const user3 = () => fitPageSize(
     profileUrl={addProfile}
     config={{ logLevel: 'all' }}
     replyType="QUOTE_REPLY"
+    isMentionEnabled
     isTypingIndicatorEnabledOnChannelList
     isMessageReceiptStatusEnabledOnChannelList
   />
@@ -295,21 +331,24 @@ export const user4 = () => fitPageSize(
     theme="dark"
     showSearchIcon
     allowProfileEdit
-    useMessageGrouping={false}
+    isMessageGroupingEnabled={false}
     profileUrl={addProfile}
     config={{ logLevel: 'all' }}
     replyType="QUOTE_REPLY"
+    isMentionEnabled
+    isTypingIndicatorEnabledOnChannelList
+    isMessageReceiptStatusEnabledOnChannelList
   />
 );
 
 const UseSendbirdChannelList = (props) => {
   const [queries] = useState({ channelListQuery: { customTypesFilter: ['apple'] } });
-  const sdk = sendBirdSelectors.getSdk(props);
+  const sdk = sendbirdSelectors.getSdk(props);
   const { setChannelUrl } = props;
 
   return (
     <ChannelList
-      onChannelSelect={(channel) => channel && setChannelUrl(channel.url)}
+      onChannelSelect={(channel) => channel && setChannelUrl(channel?.url)}
       queries={queries}
       onBeforeCreateChannel={(selectedUserIds) => {
         const params = new sdk.GroupChannelParams();

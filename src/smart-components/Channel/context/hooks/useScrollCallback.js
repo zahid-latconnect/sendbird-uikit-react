@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { ReplyType } from '@sendbird/chat/message';
 
 import * as messageActionTypes from '../dux/actionTypes';
 import { PREV_RESULT_SIZE } from '../const';
@@ -17,17 +18,17 @@ function useScrollCallback({
   return useCallback((cb) => {
     if (!hasMorePrev) { return; }
     const { appInfo = {} } = sdk;
-    const useReaction = appInfo.isUsingReaction || false;
+    const isReactionEnabled = appInfo.useReaction || false;
 
-    const messageListParams = new sdk.MessageListParams();
-    messageListParams.prevResultSize = PREV_RESULT_SIZE;
-    messageListParams.isInclusive = true;
-    messageListParams.includeReplies = false;
-    messageListParams.includeReaction = useReaction;
+    const messageListParams = {
+      prevResultSize: PREV_RESULT_SIZE,
+      isInclusive: true,
+      includeReactions: isReactionEnabled,
+    };
     if (replyType && replyType === 'QUOTE_REPLY') {
       messageListParams.includeThreadInfo = true;
       messageListParams.includeParentMessageInfo = true;
-      messageListParams.replyType = 'only_reply_to_channel';
+      messageListParams.replyType = ReplyType.ONLY_REPLY_TO_CHANNEL;
     }
     if (userFilledMessageListQuery) {
       Object.keys(userFilledMessageListQuery).forEach((key) => {

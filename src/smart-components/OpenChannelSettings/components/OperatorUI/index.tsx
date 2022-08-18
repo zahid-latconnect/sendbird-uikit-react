@@ -7,12 +7,16 @@ import Label, {
 } from '../../../../ui/Label';
 import Icon, {
   IconTypes,
+  IconColors,
 } from '../../../../ui/Icon';
-import { useOpenChannelSettings } from '../../context/OpenChannelSettingsProvider';
+import { useOpenChannelSettingsContext } from '../../context/OpenChannelSettingsProvider';
 import OpenChannelProfile from '../OpenChannelProfile';
-import DeleteChannel from '../DeleteOpenChannel';
+import DeleteChannel from './DeleteOpenChannel';
 import ParticipantsAccordion from '../ParticipantUI';
-import { AccordionGroup } from '../../../../ui/Accordion';
+import Accordion, { AccordionGroup } from '../../../../ui/Accordion';
+import OperatorList from './OperatorList';
+import MutedParticipantList from './MutedParticipantList';
+import BannedUserList from './BannedUserList';
 
 export const copyToClipboard = (text: string): boolean => {
   // @ts-ignore: Unreachable code error
@@ -49,7 +53,7 @@ export const OperatorUI: React.FC<OperatorUIProps> = ({
   const {
     onCloseClick,
     channel,
-  } = useOpenChannelSettings();
+  } = useOpenChannelSettingsContext();
   return (
     <>
       <div className="sendbird-openchannel-settings__header">
@@ -98,7 +102,110 @@ export const OperatorUI: React.FC<OperatorUIProps> = ({
         </Label>
       </div>
       <AccordionGroup>
-        <ParticipantsAccordion />
+        <Accordion
+          className="sendbird-openchannel-settings__operators-list"
+          id="operators"
+          renderTitle={() => (
+            <>
+              <Icon
+                className="sendbird-openchannel-settings__operator-accordion-icon"
+                type={IconTypes.OPERATOR}
+                fillColor={IconColors.PRIMARY}
+                width="24px"
+                height="24px"
+              />
+              <Label
+                type={LabelTypography.SUBTITLE_1}
+                color={LabelColors.ONBACKGROUND_1}
+              >
+                {stringSet.OPEN_CHANNEL_SETTINGS__OPERATORS_TITLE}
+              </Label>
+            </>
+          )}
+          renderContent={() => (
+            <>
+              <OperatorList />
+            </>
+          )}
+        />
+        <Accordion
+          className="sendbird-channel-settings__operators-list"
+          id="participants"
+          renderTitle={() => (
+            <>
+              <Icon
+                type={IconTypes.MEMBERS}
+                fillColor={IconColors.PRIMARY}
+                width={24}
+                height={24}
+                className="sendbird-openchannel-settings__operator-accordion-icon"
+              />
+              <Label
+                type={LabelTypography.SUBTITLE_1}
+                color={LabelColors.ONBACKGROUND_1}
+              >
+                {stringSet.OPEN_CHANNEL_SETTINGS__PARTICIPANTS_ACCORDION_TITLE}
+              </Label>
+            </>
+          )}
+          renderContent={() => (
+            <>
+              <ParticipantsAccordion isOperatorView />
+            </>
+          )}
+        />
+        <Accordion
+          className="sendbird-channel-settings__operators-list"
+          id="mutedMembers"
+          renderTitle={() => (
+            <>
+              <Icon
+                className="sendbird-openchannel-settings__operator-accordion-icon"
+                type={IconTypes.MUTE}
+                fillColor={IconColors.PRIMARY}
+                width="24px"
+                height="24px"
+              />
+              <Label
+                type={LabelTypography.SUBTITLE_1}
+                color={LabelColors.ONBACKGROUND_1}
+              >
+                {stringSet.OPEN_CHANNEL_SETTINGS__MUTED_MEMBERS__TITLE}
+              </Label>
+            </>
+          )}
+          renderContent={() => (
+            <>
+              <MutedParticipantList />
+            </>
+          )}
+        />
+        <Accordion
+          className="sendbird-channel-settings__operators-list"
+          id="bannedUsers"
+          renderTitle={() => (
+            <>
+              <Icon
+                className="sendbird-openchannel-settings__operator-accordion-icon"
+                type={IconTypes.BAN}
+                fillColor={IconColors.PRIMARY}
+                width="24px"
+                height="24px"
+              />
+              <Label
+                type={LabelTypography.SUBTITLE_1}
+                color={LabelColors.ONBACKGROUND_1}
+              >
+                {stringSet.OPEN_CHANNEL_SETTINGS__BANNED_MEMBERS__TITLE}
+              </Label>
+            </>
+          )}
+          renderContent={() => (
+            <>
+              <BannedUserList />
+            </>
+          )}
+        />
       </AccordionGroup>
       <DeleteChannel />
     </>

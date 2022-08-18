@@ -1,17 +1,18 @@
-import Sendbird from 'sendbird';
-import { EveryMessage } from '../../../../index';
+import type { User } from '@sendbird/chat';
+import { AdminMessage, FileMessage, UserMessage } from '@sendbird/chat/message';
+import type { OpenChannel } from '@sendbird/chat/openChannel';
 
 export interface State {
-  allMessages: Array<EveryMessage>;
+  allMessages: Array<AdminMessage | UserMessage | FileMessage>;
   loading: boolean;
   initialized: boolean;
-  currentOpenChannel: Sendbird.OpenChannel;
+  currentOpenChannel: OpenChannel;
   isInvalid: boolean;
   hasMore: boolean;
   lastMessageTimestamp: number;
   frozen: boolean;
-  operators: Array<Sendbird.User>;
-  participants: Array<Sendbird.User>;
+  operators: Array<User>;
+  participants: Array<User>;
   bannedParticipantIds: Array<string>;
   mutedParticipantIds: Array<string>;
 }

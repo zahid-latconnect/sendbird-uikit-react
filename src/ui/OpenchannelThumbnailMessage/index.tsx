@@ -5,10 +5,10 @@ import React, {
   useEffect,
   useContext,
 } from 'react';
+import { FileMessage } from '@sendbird/chat/message';
 import format from 'date-fns/format';
 import './index.scss';
 import { SUPPORTING_TYPES, getSupportingFileType } from './utils';
-import { ClientFileMessage } from '../../index';
 import { useLocalization } from '../../lib/LocalizationContext';
 
 import Avatar from '../Avatar';
@@ -21,7 +21,6 @@ import Loader from '../Loader';
 import UserProfile from '../UserProfile';
 import { UserProfileContext } from '../../lib/UserProfileContext';
 import {
-  checkIsByMe,
   checkIsSent,
   checkIsPending,
   checkIsFailed,
@@ -31,21 +30,26 @@ import {
 } from '../../utils/openChannelUtils';
 import { getSenderFromMessage } from '../../utils/openChannelUtils';
 
+interface LocalUrl {
+  localUrl?: string;
+}
 interface Props {
   className?: string | Array<string>;
-  message: ClientFileMessage;
+  message: FileMessage;
+  isOperator?: boolean;
   disabled: boolean;
   userId: string;
   chainTop: boolean;
   chainBottom: boolean;
   onClick(bool: boolean): void,
   showRemove(bool: boolean): void,
-  resendMessage(message: ClientFileMessage): void;
+  resendMessage(message: FileMessage): void;
 }
 
 export default function OpenchannelThumbnailMessage({
   className,
   message,
+  isOperator,
   disabled,
   userId,
   chainTop,
@@ -56,9 +60,9 @@ export default function OpenchannelThumbnailMessage({
   const {
     type,
     url,
-    localUrl,
     thumbnails,
-  } = message;
+    localUrl,
+  }: FileMessage & LocalUrl = message;
   const status = message?.sendingStatus;
   const thumbnailUrl = (thumbnails && thumbnails.length > 0 && thumbnails[0].url) || null;
   const { stringSet, dateLocale } = useLocalization();
@@ -79,7 +83,6 @@ export default function OpenchannelThumbnailMessage({
     </div>
   ), []);
 
-  const isByMe = checkIsByMe(message, userId);
   const isMessageSent = checkIsSent(status);
   const isPending = checkIsPending(status);
   const isFailed = checkIsFailed(status);
@@ -152,7 +155,7 @@ export default function OpenchannelThumbnailMessage({
               <Label
                 className="sendbird-openchannel-thumbnail-message__right__title__sender-name"
                 type={LabelTypography.CAPTION_2}
-                color={isByMe ? LabelColors.SECONDARY_3 : LabelColors.ONBACKGROUND_2}
+                color={isOperator ? LabelColors.SECONDARY_3 : LabelColors.ONBACKGROUND_2}
               >
                 {
                   sender && (

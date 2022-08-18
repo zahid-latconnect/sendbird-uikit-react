@@ -1,6 +1,6 @@
-import React, { ReactElement, useContext, useMemo } from 'react';
-import SendBird from 'sendbird';
 import './index.scss';
+import React, { ReactElement, useContext, useMemo } from 'react';
+import type { UserMessage } from '@sendbird/chat/message';
 
 import Label, { LabelTypography, LabelColors } from '../Label';
 import { getClassName, isEditedMessage } from '../../utils';
@@ -10,7 +10,7 @@ import Word from '../Word';
 
 interface Props {
   className?: string | Array<string>;
-  message: SendBird.UserMessage;
+  message: UserMessage;
   isByMe?: boolean;
   mouseHover?: boolean;
   isMentionEnabled?: boolean;
@@ -33,7 +33,7 @@ export default function TextMessageItemBody({
       type={LabelTypography.BODY_1}
       color={isByMe ? LabelColors.ONCONTENT_1 : LabelColors.ONBACKGROUND_1}
     >
-      <p className={getClassName([
+      <div className={getClassName([
         className,
         'sendbird-text-message-item-body',
         isByMe ? 'outgoing' : 'incoming',
@@ -72,7 +72,7 @@ export default function TextMessageItemBody({
             </Label>
           )
         }
-      </p>
+      </div>
     </Label>
   );
 }

@@ -5,6 +5,7 @@ import * as topics from '../../../lib/pubSub/topics';
 import {
   getSendingMessageStatus,
   getOutgoingMessageStates,
+  isReadMessage,
 } from '../../../utils';
 
 const MessageStatusType = getOutgoingMessageStates();
@@ -44,7 +45,7 @@ export const pubSubHandler = (channelUrl, pubSub, dispatcher) => {
   subscriber.set(topics.SEND_USER_MESSAGE, pubSub.subscribe(topics.SEND_USER_MESSAGE, (msg) => {
     const { channel, message } = msg;
     scrollIntoLast();
-    if (channel && (channelUrl === channel.url)) {
+    if (channelUrl === channel?.url) {
       dispatcher({
         type: channelActions.SEND_MESSAGEGE_SUCESS,
         payload: message,
@@ -53,7 +54,7 @@ export const pubSubHandler = (channelUrl, pubSub, dispatcher) => {
   }));
   subscriber.set(topics.SEND_MESSAGE_START, pubSub.subscribe(topics.SEND_MESSAGE_START, (msg) => {
     const { channel, message } = msg;
-    if (channel && (channelUrl === channel.url)) {
+    if (channelUrl === channel?.url) {
       dispatcher({
         type: channelActions.SEND_MESSAGEGE_START,
         payload: message,
@@ -63,7 +64,7 @@ export const pubSubHandler = (channelUrl, pubSub, dispatcher) => {
   subscriber.set(topics.SEND_FILE_MESSAGE, pubSub.subscribe(topics.SEND_FILE_MESSAGE, (msg) => {
     const { channel, message } = msg;
     scrollIntoLast();
-    if (channel && (channelUrl === channel.url)) {
+    if (channelUrl === channel?.url) {
       dispatcher({
         type: channelActions.SEND_MESSAGEGE_SUCESS,
         payload: message,
@@ -72,7 +73,7 @@ export const pubSubHandler = (channelUrl, pubSub, dispatcher) => {
   }));
   subscriber.set(topics.UPDATE_USER_MESSAGE, pubSub.subscribe(topics.UPDATE_USER_MESSAGE, (msg) => {
     const { channel, message, fromSelector } = msg;
-    if (fromSelector && channel && (channelUrl === channel.url)) {
+    if (fromSelector && (channelUrl === channel?.url)) {
       dispatcher({
         type: channelActions.ON_MESSAGE_UPDATED,
         payload: { channel, message },
@@ -81,7 +82,7 @@ export const pubSubHandler = (channelUrl, pubSub, dispatcher) => {
   }));
   subscriber.set(topics.DELETE_MESSAGE, pubSub.subscribe(topics.DELETE_MESSAGE, (msg) => {
     const { channel, messageId } = msg;
-    if (channel && (channelUrl === channel.url)) {
+    if (channelUrl === channel?.url) {
       dispatcher({
         type: channelActions.ON_MESSAGE_DELETED,
         payload: messageId,
@@ -106,12 +107,12 @@ export const getParsedStatus = (message, currentGroupChannel) => {
       return MessageStatusType.SENT;
     }
 
-    const unreadMemberCount = currentGroupChannel.getUnreadMemberCount(message);
+    const unreadMemberCount = currentGroupChannel?.getUnreadMemberCount(message);
     if (unreadMemberCount === 0) {
       return MessageStatusType.READ;
     }
 
-    const isDelivered = currentGroupChannel.getDeliveryReceipt(message) === 0;
+    const isDelivered = currentGroupChannel?.getUndeliveredMemberCount(message) === 0;
     if (isDelivered) {
       return MessageStatusType.DELIVERED;
     }
@@ -123,17 +124,17 @@ export const getParsedStatus = (message, currentGroupChannel) => {
 };
 
 export const isOperator = (groupChannel = {}) => {
-  const { myRole } = groupChannel;
+  const myRole = groupChannel?.myRole;
   return myRole === 'operator';
 };
 
 export const isDisabledBecauseFrozen = (groupChannel = {}) => {
-  const { isFrozen } = groupChannel;
+  const isFrozen = groupChannel?.isFrozen;
   return isFrozen && !isOperator(groupChannel);
 };
 
 export const isDisabledBecauseMuted = (groupChannel = {}) => {
-  const { myMutedState } = groupChannel;
+  const myMutedState = groupChannel?.myMutedState;
   return myMutedState === 'muted';
 };
 
@@ -186,10 +187,12 @@ export const getNicknamesMapFromMembers = (members = []) => {
 
 export const getMessageCreatedAt = (message) => format(message.createdAt, 'p');
 
-export const isSameGroup = (message, comparingMessage) => {
+export const isSameGroup = (message, comparingMessage, currentChannel) => {
   if (!(message
     && comparingMessage
-    && message?.messageType !== 'admin'
+    && message.messageType
+    && message.messageType !== 'admin'
+    && comparingMessage.messageType
     && comparingMessage?.messageType !== 'admin'
     && message?.sender
     && comparingMessage?.sender
@@ -200,11 +203,11 @@ export const isSameGroup = (message, comparingMessage) => {
   )) {
     return false;
   }
-
   return (
     message?.sendingStatus === comparingMessage?.sendingStatus
     && message?.sender?.userId === comparingMessage?.sender?.userId
     && getMessageCreatedAt(message) === getMessageCreatedAt(comparingMessage)
+    && isReadMessage(currentChannel, message) === isReadMessage(currentChannel, comparingMessage)
   );
 };
 
@@ -212,12 +215,13 @@ export const compareMessagesForGrouping = (
   prevMessage,
   currMessage,
   nextMessage,
+  currentChannel,
 ) => {
   const sendingStatus = currMessage?.sendingStatus || '';
   const isAcceptable = sendingStatus !== 'pending' && sendingStatus !== 'failed';
   return [
-    isSameGroup(prevMessage, currMessage) && isAcceptable,
-    isSameGroup(currMessage, nextMessage) && isAcceptable,
+    isSameGroup(prevMessage, currMessage, currentChannel) && isAcceptable,
+    isSameGroup(currMessage, nextMessage, currentChannel) && isAcceptable,
   ];
 };
 

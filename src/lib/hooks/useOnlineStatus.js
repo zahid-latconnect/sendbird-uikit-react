@@ -1,3 +1,4 @@
+import { ConnectionHandler } from '@sendbird/chat';
 import { useState, useEffect } from 'react';
 
 import { uuidv4 } from '../../utils/uuid';
@@ -7,11 +8,12 @@ function useConnectionStatus(sdk, logger) {
 
   useEffect(() => {
     const uniqueHandlerId = uuidv4();
-    logger.warning('sdk changed', uniqueHandlerId);
-    let handler;
-    if (sdk && sdk.ConnectionHandler) {
-      handler = new sdk.ConnectionHandler();
-
+    try {
+      logger.warning('sdk changed', uniqueHandlerId);
+      const handler = new ConnectionHandler();
+      handler.onDisconnected = () => {
+        logger.warning('onDisconnected', { isOnline });
+      };
       handler.onReconnectStarted = () => {
         setIsOnline(false);
         logger.warning('onReconnectStarted', { isOnline });
@@ -25,7 +27,11 @@ function useConnectionStatus(sdk, logger) {
         logger.warning('onReconnectFailed');
       };
       logger.info('Added ConnectionHandler', uniqueHandlerId);
-      sdk.addConnectionHandler(uniqueHandlerId, handler);
+      if (sdk?.addConnectionHandler) {
+        sdk.addConnectionHandler(uniqueHandlerId, handler);
+      }
+    } catch {
+      //
     }
     return () => {
       try {
@@ -41,7 +47,7 @@ function useConnectionStatus(sdk, logger) {
     const tryReconnect = () => {
       try {
         logger.warning('Try reconnecting SDK');
-        if (sdk.getConnectionState() !== 'OPEN') { // connection is not broken yet
+        if (sdk.connectionState !== 'OPEN') { // connection is not broken yet
           sdk.reconnect();
         }
       } catch {

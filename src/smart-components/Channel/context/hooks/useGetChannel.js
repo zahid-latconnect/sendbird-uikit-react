@@ -8,9 +8,9 @@ function useSetChannel({ channelUrl, sdkInit }, {
   logger,
 }) {
   useEffect(() => {
-    if (channelUrl && sdkInit && sdk && sdk.GroupChannel) {
+    if (channelUrl && sdkInit && sdk && sdk.groupChannel) {
       logger.info('Channel | useSetChannel fetching channel', channelUrl);
-      sdk.GroupChannel.getChannel(channelUrl)
+      sdk.groupChannel.getChannel(channelUrl)
         .then((groupChannel) => {
           logger.info('Channel | useSetChannel fetched channel', groupChannel);
           messagesDispatcher({
@@ -20,7 +20,11 @@ function useSetChannel({ channelUrl, sdkInit }, {
 
           logger.info('Channel: Mark as read', groupChannel);
           // this order is important - this mark as read should update the event handler up above
-          groupChannel.markAsRead();
+          try {
+            groupChannel.markAsRead();
+          } catch {
+            //
+          }
         })
         .catch((e) => {
           logger.warning('Channel | useSetChannel fetch channel failed', { channelUrl, e });
@@ -28,17 +32,16 @@ function useSetChannel({ channelUrl, sdkInit }, {
             type: messageActionTypes.SET_CHANNEL_INVALID,
           });
         });
-      sdk.getAllEmoji((emojiContainer_, err) => {
-        if (err) {
-          logger.error('Channel: Getting emojis failed', err);
-          return;
-        }
+      sdk.getAllEmoji().then((emojiContainer_) => {
         logger.info('Channel: Getting emojis success', emojiContainer_);
         messagesDispatcher({
           type: messageActionTypes.SET_EMOJI_CONTAINER,
           payload: emojiContainer_,
         });
+      }).catch((err) => {
+        logger.error('Channel: Getting emojis failed', err);
       });
+      sdk.getAllEmoji();
     }
   }, [channelUrl, sdkInit]);
 }

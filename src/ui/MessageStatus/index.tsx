@@ -1,6 +1,8 @@
+import './index.scss';
 import React, { useMemo } from 'react';
 import format from 'date-fns/format';
-import './index.scss';
+import type { FileMessage, UserMessage } from '@sendbird/chat/message';
+import type { GroupChannel } from '@sendbird/chat/groupChannel';
 
 import Icon, { IconTypes, IconColors } from '../Icon';
 import Label, { LabelColors, LabelTypography } from '../Label';
@@ -11,7 +13,6 @@ import {
   getOutgoingMessageStates,
   isSentStatus,
 } from '../../utils';
-import { FileMessage, GroupChannel, UserMessage } from 'sendbird';
 import { useLocalization } from '../../lib/LocalizationContext';
 
 export const MessageStatusTypes = getOutgoingMessageStates();
@@ -31,10 +32,10 @@ export default function MessageStatus({
   const status = useMemo(() => (
     getOutgoingMessageState(channel, message)
   ), [channel?.getUnreadMemberCount?.(message), channel?.getUndeliveredMemberCount?.(message)]);
-  const showMessageStatusIcon = channel?.isGroupChannel()
-    && !channel?.isSuper
-    && !channel?.isPublic
-    && !channel?.isBroadcast;
+  const hideMessageStatusIcon = channel?.isGroupChannel() && (
+    (channel.isSuper || channel.isPublic || channel.isBroadcast)
+    && !(status === MessageStatusTypes.PENDING || status === MessageStatusTypes.FAILED)
+  );
   const iconType = {
     [MessageStatusTypes.SENT]: IconTypes.DONE,
     [MessageStatusTypes.DELIVERED]: IconTypes.DONE_ALL,
@@ -57,7 +58,7 @@ export default function MessageStatus({
     >
       {(status === MessageStatusTypes.PENDING) ? (
         <Loader
-          className={`sendbird-message-status__icon ${showMessageStatusIcon ? '' : 'hide-icon'}`}
+          className="sendbird-message-status__icon"
           width="16px"
           height="16px"
         >
@@ -70,7 +71,7 @@ export default function MessageStatus({
         </Loader>
       ) : (
         <Icon
-          className={`sendbird-message-status__icon ${showMessageStatusIcon ? '' : 'hide-icon'}`}
+          className={`sendbird-message-status__icon ${hideMessageStatusIcon ? 'hide-icon' : ''}`}
           type={iconType[status] || IconTypes.ERROR}
           fillColor={iconColor[status]}
           width="16px"

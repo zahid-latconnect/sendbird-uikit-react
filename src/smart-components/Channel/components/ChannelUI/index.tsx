@@ -3,7 +3,7 @@ import './channel-ui.scss';
 import React, { useEffect, useState } from 'react';
 import useSendbirdStateContext from '../../../../hooks/useSendbirdStateContext';
 
-import { useChannel } from '../../context/ChannelProvider';
+import { useChannelContext } from '../../context/ChannelProvider';
 import PlaceHolder, { PlaceHolderTypes } from '../../../../ui/PlaceHolder';
 import ConnectionStatus from '../../../../ui/ConnectionStatus';
 import ChannelHeader from '../ChannelHeader';
@@ -23,7 +23,7 @@ export interface ChannelUIProps {
   renderMessage?: (props: RenderMessageProps) => React.ReactNode;
   renderMessageInput?: () => React.ReactNode;
   renderTypingIndicator?: () => React.ReactNode;
-  renderCustomSeperator?: () => React.ReactNode;
+  renderCustomSeparator?: () => React.ReactNode;
 }
 
 const ChannelUI: React.FC<ChannelUIProps> = ({
@@ -34,7 +34,7 @@ const ChannelUI: React.FC<ChannelUIProps> = ({
   renderMessage,
   renderMessageInput,
   renderTypingIndicator,
-  renderCustomSeperator,
+  renderCustomSeparator,
 }: ChannelUIProps) => {
   const {
     currentGroupChannel,
@@ -47,10 +47,10 @@ const ChannelUI: React.FC<ChannelUIProps> = ({
     setHighLightedMessageId,
     scrollRef,
     messagesDispatcher,
-  } = useChannel();
+  } = useChannelContext();
   const [unreadCount, setUnreadCount] = useState(0);
   useEffect(() => {
-    setUnreadCount(currentGroupChannel.unreadMessageCount);
+    setUnreadCount(currentGroupChannel?.unreadMessageCount);
   }, [currentGroupChannel?.unreadMessageCount]);
 
   const globalStore = useSendbirdStateContext();
@@ -117,7 +117,11 @@ const ChannelUI: React.FC<ChannelUIProps> = ({
               if (scrollRef?.current?.scrollTop) {
                 scrollRef.current.scrollTop = scrollRef?.current?.scrollHeight - scrollRef?.current?.offsetHeight;
               }
-              currentGroupChannel?.markAsRead();
+              try {
+                currentGroupChannel?.markAsRead();
+              } catch {
+                //
+              }
               messagesDispatcher({
                 type: messageActionTypes.MARK_AS_READ,
                 payload: { channel: currentGroupChannel },
@@ -143,7 +147,7 @@ const ChannelUI: React.FC<ChannelUIProps> = ({
             <MessageList
               renderMessage={renderMessage}
               renderPlaceholderEmpty={renderPlaceholderEmpty}
-              renderCustomSeperator={renderCustomSeperator}
+              renderCustomSeparator={renderCustomSeparator}
             />
           )
       }

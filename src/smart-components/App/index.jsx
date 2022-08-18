@@ -20,16 +20,18 @@ export default function App(props) {
     appId,
     userId,
     accessToken,
+    customApiHost,
+    customWebSocketHost,
     theme,
     userListQuery,
     nickname,
     profileUrl,
     dateLocale,
     config = {},
-    useReaction,
+    isReactionEnabled,
     isMentionEnabled,
     replyType,
-    useMessageGrouping,
+    isMessageGroupingEnabled,
     colorSet,
     stringSet,
     allowProfileEdit,
@@ -54,6 +56,8 @@ export default function App(props) {
       appId={appId}
       userId={userId}
       accessToken={accessToken}
+      customApiHost={customApiHost}
+      customWebSocketHost={customWebSocketHost}
       theme={theme}
       nickname={nickname}
       profileUrl={profileUrl}
@@ -64,7 +68,7 @@ export default function App(props) {
       disableUserProfile={disableUserProfile}
       renderUserProfile={renderUserProfile}
       imageCompression={imageCompression}
-      useReaction={useReaction}
+      isReactionEnabled={isReactionEnabled}
       isMentionEnabled={isMentionEnabled}
       isTypingIndicatorEnabledOnChannelList={isTypingIndicatorEnabledOnChannelList}
       isMessageReceiptStatusEnabledOnChannelList={isMessageReceiptStatusEnabledOnChannelList}
@@ -78,7 +82,7 @@ export default function App(props) {
             onChannelSelect={(channel) => {
               setStartingPoint(null);
               setHighlightedMessage(null);
-              if (channel && channel.url) {
+              if (channel?.url) {
                 setCurrentChannelUrl(channel.url);
               } else {
                 setCurrentChannelUrl('');
@@ -106,9 +110,9 @@ export default function App(props) {
             showSearchIcon={showSearchIcon}
             startingPoint={startingPoint}
             highlightedMessage={highlightedMessage}
-            useReaction={useReaction}
+            isReactionEnabled={isReactionEnabled}
             replyType={replyType}
-            useMessageGrouping={useMessageGrouping}
+            isMessageGroupingEnabled={isMessageGroupingEnabled}
           />
         </div>
         {showSettings && (
@@ -152,6 +156,8 @@ App.propTypes = {
   appId: PropTypes.string.isRequired,
   userId: PropTypes.string.isRequired,
   accessToken: PropTypes.string,
+  customApiHost: PropTypes.string,
+  customWebSocketHost: PropTypes.string,
   theme: PropTypes.string,
   userListQuery: PropTypes.func,
   nickname: PropTypes.string,
@@ -168,10 +174,10 @@ App.propTypes = {
       PropTypes.arrayOf(PropTypes.string),
     ]),
   }),
-  useReaction: PropTypes.bool,
+  isReactionEnabled: PropTypes.bool,
   replyType: PropTypes.oneOf(['NONE', 'QUOTE_REPLY', 'THREAD']),
   showSearchIcon: PropTypes.bool,
-  useMessageGrouping: PropTypes.bool,
+  isMessageGroupingEnabled: PropTypes.bool,
   stringSet: PropTypes.objectOf(PropTypes.string),
   colorSet: PropTypes.objectOf(PropTypes.string),
   imageCompression: PropTypes.shape({
@@ -193,6 +199,8 @@ App.propTypes = {
 
 App.defaultProps = {
   accessToken: '',
+  customApiHost: '',
+  customWebSocketHost: '',
   theme: 'light',
   nickname: '',
   profileUrl: '',
@@ -204,10 +212,10 @@ App.defaultProps = {
   showSearchIcon: false,
   renderUserProfile: null,
   config: {},
-  useReaction: true,
+  isReactionEnabled: true,
   isMentionEnabled: false,
   replyType: 'NONE',
-  useMessageGrouping: true,
+  isMessageGroupingEnabled: true,
   stringSet: null,
   colorSet: null,
   imageCompression: {},

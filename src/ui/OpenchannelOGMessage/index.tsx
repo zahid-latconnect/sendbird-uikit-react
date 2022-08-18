@@ -1,4 +1,5 @@
 import React, { useState, useContext, useMemo, useRef, useEffect } from 'react';
+import { UserMessage } from '@sendbird/chat/message';
 import format from 'date-fns/format';
 import './index.scss';
 
@@ -17,9 +18,7 @@ import uuidv4 from '../../utils/uuid';
 import { copyToClipboard } from '../OpenchannelUserMessage/utils';
 import { useLocalization } from '../../lib/LocalizationContext';
 import { checkOGIsEnalbed, createUrlTester, URL_REG } from './utils';
-import { ClientUserMessage } from '../../index';
 import {
-  checkIsByMe,
   checkIsPending,
   checkIsFailed,
   isFineCopy,
@@ -31,12 +30,13 @@ import {
 import { getSenderFromMessage } from '../../utils/openChannelUtils';
 
 interface Props {
-  message: ClientUserMessage;
+  message: UserMessage;
+  isOperator?: boolean;
   className?: string | Array<string>;
   disabled?: boolean;
   showEdit(bool: boolean): void;
   showRemove(bool: boolean): void;
-  resendMessage(message: ClientUserMessage): void;
+  resendMessage(message: UserMessage): void;
   chainTop?: boolean;
   chainBottom?: boolean;
   userId: string;
@@ -44,6 +44,7 @@ interface Props {
 
 export default function OpenchannelOGMessage({
   message,
+  isOperator,
   className,
   disabled,
   showEdit,
@@ -68,7 +69,6 @@ export default function OpenchannelOGMessage({
   const avatarRef = useRef(null);
 
   const isUrl = createUrlTester(URL_REG);
-  const isByMe = checkIsByMe(message, userId);
   const isPending = checkIsPending(status);
   const isFailed = checkIsFailed(status);
   const sender = getSenderFromMessage(message);
@@ -202,7 +202,7 @@ export default function OpenchannelOGMessage({
                 <Label
                   className="sendbird-openchannel-og-message__top__right__title__sender-name"
                   type={LabelTypography.CAPTION_2}
-                  color={isByMe ? LabelColors.SECONDARY_3 : LabelColors.ONBACKGROUND_2}
+                  color={isOperator ? LabelColors.SECONDARY_3 : LabelColors.ONBACKGROUND_2}
                 >
                   {
                     sender && (

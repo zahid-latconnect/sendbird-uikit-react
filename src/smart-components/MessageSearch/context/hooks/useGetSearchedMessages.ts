@@ -1,22 +1,33 @@
 import { useEffect } from 'react';
+
+import type { GroupChannel, SendbirdGroupChat } from '@sendbird/chat/groupChannel';
+import type { MessageSearchQueryParams } from '@sendbird/chat/lib/__definition';
+import type {
+  AdminMessage,
+  BaseMessage,
+  FileMessage,
+  MessageSearchQuery,
+  UserMessage,
+} from '@sendbird/chat/message';
+import type { SendbirdError } from '@sendbird/chat';
+
+import type { Logger } from '../../../../lib/SendbirdState';
 import * as messageActionTypes from '../dux/actionTypes';
-import SendbirdUIKit from '../../../../index';
-import SendBird from 'sendbird';
 
 interface MainProps {
-  currentChannel: SendbirdUIKit.GroupChannelType;
+  currentChannel: GroupChannel;
   channelUrl: string;
   requestString?: string;
-  messageSearchQuery?: SendbirdUIKit.MessageSearchQueryType;
+  messageSearchQuery?: MessageSearchQuery;
   onResultLoaded?: (
-    messages?: Array<SendBird.UserMessage | SendBird.FileMessage | SendBird.AdminMessage>,
-    error?: SendbirdUIKit.SendbirdError,
+    messages?: Array<BaseMessage | UserMessage | FileMessage | AdminMessage>,
+    error?: SendbirdError,
   ) => void;
   retryCount: number;
 }
 interface ToolProps {
-  sdk: SendbirdUIKit.Sdk;
-  logger: SendbirdUIKit.Logger;
+  sdk: SendbirdGroupChat;
+  logger: Logger;
   messageSearchDispatcher: ({ type: string, payload: any }) => void;
 }
 
@@ -31,35 +42,34 @@ function useGetSearchedMessages(
     });
     if (sdk && channelUrl && sdk.createMessageSearchQuery && currentChannel) {
       if (requestString) {
-        const inputSearchMessageQueryObject = {
+        const inputSearchMessageQueryObject: MessageSearchQueryParams = {
           ...messageSearchQuery,
           order: 'ts' as const,
           channelUrl,
           messageTimestampFrom: currentChannel.invitedAt,
+          keyword: requestString,
         };
-        const createdQuery = sdk.createMessageSearchQuery(requestString, inputSearchMessageQueryObject);
-        createdQuery.next((messages, error) => {
-          if (!error) {
-            logger.info('MessageSearch | useGetSearchedMessages: succeeded getting messages', messages);
-            messageSearchDispatcher({
-              type: messageActionTypes.GET_SEARCHED_MESSAGES,
-              payload: {
-                messages,
-                createdQuery,
-              },
-            });
-            if (onResultLoaded && typeof onResultLoaded === 'function') {
-              onResultLoaded(messages, null);
-            }
-          } else {
-            logger.warning('MessageSearch | useGetSearchedMessages: getting failed', error);
-            messageSearchDispatcher({
-              type: messageActionTypes.SET_QUERY_INVALID,
-              payload: null,
-            });
-            if (onResultLoaded && typeof onResultLoaded === 'function') {
-              onResultLoaded(null, error);
-            }
+        const createdQuery = sdk.createMessageSearchQuery(inputSearchMessageQueryObject);
+        createdQuery.next().then((messages) => {
+          logger.info('MessageSearch | useGetSearchedMessages: succeeded getting messages', messages);
+          messageSearchDispatcher({
+            type: messageActionTypes.GET_SEARCHED_MESSAGES,
+            payload: {
+              messages,
+              createdQuery,
+            },
+          });
+          if (onResultLoaded && typeof onResultLoaded === 'function') {
+            onResultLoaded(messages, null);
+          }
+        }).catch((error) => {
+          logger.warning('MessageSearch | useGetSearchedMessages: getting failed', error);
+          messageSearchDispatcher({
+            type: messageActionTypes.SET_QUERY_INVALID,
+            payload: null,
+          });
+          if (onResultLoaded && typeof onResultLoaded === 'function') {
+            onResultLoaded(null, error);
           }
         });
         messageSearchDispatcher({

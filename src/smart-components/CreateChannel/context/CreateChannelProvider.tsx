@@ -1,32 +1,37 @@
 import React, { useState } from 'react';
-import Sendbird from 'sendbird';
+import { User } from '@sendbird/chat';
+import type {
+  GroupChannel,
+  GroupChannelCreateParams,
+  SendbirdGroupChat,
+} from '@sendbird/chat/groupChannel';
 
-import { getCreateChannel } from '../../../lib/selectors';
+import { getCreateGroupChannel } from '../../../lib/selectors';
 import useSendbirdStateContext from '../../../hooks/useSendbirdStateContext';
 import { CHANNEL_TYPE } from '../types';
 
 const CreateChannelContext = React.createContext(undefined);
 
-interface UserListQuery {
+export interface UserListQuery {
   hasNext?: boolean;
-  next(callback: unknown): void;
+  next(): Promise<Array<User>>;
 }
 
 export interface CreateChannelProviderProps {
   children?: React.ReactNode;
-  onCreateChannel(channel: Sendbird.GroupChannel): void;
-  onBeforeCreateChannel?(users: Array<string>): Sendbird.GroupChannelParams;
+  onCreateChannel(channel: GroupChannel): void;
+  onBeforeCreateChannel?(users: Array<string>): GroupChannelCreateParams;
   userListQuery?(): UserListQuery;
 }
 
-type CreateChannel = (channelParams: Sendbird.GroupChannelParams) => Promise<Sendbird.GroupChannel>;
+type CreateChannel = (channelParams: GroupChannelCreateParams) => Promise<GroupChannel>;
 
 export interface CreateChannelContextInterface {
-  onBeforeCreateChannel?(users: Array<string>): Sendbird.GroupChannelParams;
+  onBeforeCreateChannel?(users: Array<string>): GroupChannelCreateParams;
   createChannel: CreateChannel;
-  sdk: Sendbird.SendBirdInstance;
+  sdk: SendbirdGroupChat;
   userListQuery?(): UserListQuery;
-  onCreateChannel?(channel: Sendbird.GroupChannel): void;
+  onCreateChannel?(channel: GroupChannel): void;
   step: number,
   setStep: React.Dispatch<React.SetStateAction<number>>,
   type: CHANNEL_TYPE,
@@ -43,8 +48,8 @@ const CreateChannelProvider: React.FC<CreateChannelProviderProps> = (props: Crea
 
   const store = useSendbirdStateContext();
   const userListQuery_ = store?.config?.userListQuery;
-  const createChannel: (channelParams: Sendbird.GroupChannelParams)
-    => Promise<Sendbird.GroupChannel> = getCreateChannel(store);
+  const createChannel: (channelParams: GroupChannelCreateParams)
+    => Promise<GroupChannel> = getCreateGroupChannel(store);
 
   const [step, setStep] = useState(0);
   const [type, setType] = useState(CHANNEL_TYPE.GROUP);
@@ -69,4 +74,7 @@ const useCreateChannelContext = (): CreateChannelContextInterface => (
   React.useContext(CreateChannelContext)
 );
 
-export { CreateChannelProvider, useCreateChannelContext };
+export {
+  CreateChannelProvider,
+  useCreateChannelContext,
+};

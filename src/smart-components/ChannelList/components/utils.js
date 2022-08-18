@@ -1,11 +1,14 @@
 export const createDefaultUserListQuery = ({ sdk, userFilledApplicationUserListQuery = {} }) => {
-  const params = sdk.createApplicationUserListQuery();
-  if (userFilledApplicationUserListQuery) {
-    Object.keys(userFilledApplicationUserListQuery).forEach((key) => {
-      params[key] = userFilledApplicationUserListQuery[key];
-    });
+  if (sdk?.createApplicationUserListQuery) {
+    const params = sdk?.createApplicationUserListQuery();
+    if (userFilledApplicationUserListQuery) {
+      Object.keys(userFilledApplicationUserListQuery).forEach((key) => {
+        params[key] = userFilledApplicationUserListQuery[key];
+      });
+    }
+    return params;
   }
-  return params;
+  return null;
 };
 
 const getApplicationAttributes = (sdk = {}) => {
@@ -58,19 +61,9 @@ export const createChannel = (
   if (onBeforeCreateChannel) {
     const params = onBeforeCreateChannel(selectedUsers);
     setChannelType(params, type);
-    sdk.GroupChannel.createChannel(params, (response, error) => {
-      const swapParams = sdk.getErrorFirstCallback();
-      let groupChannel = response;
-      let err = error;
-      if (swapParams) {
-        groupChannel = error;
-        err = response;
-      }
-      if (err) {
-        reject(err);
-      }
+    sdk.groupChannel.createChannel(params).then((groupChannel) => {
       resolve(groupChannel);
-    });
+    }).catch((err) => { reject(err); });
     return;
   }
 
@@ -83,22 +76,9 @@ export const createChannel = (
   }
   setChannelType(params, type);
   // do not have custom params
-  sdk.GroupChannel.createChannel(
-    params,
-    (response, error) => {
-      const swapParams = sdk.getErrorFirstCallback();
-      let groupChannel = response;
-      let err = error;
-      if (swapParams) {
-        groupChannel = error;
-        err = response;
-      }
-      if (err) {
-        reject(err);
-      }
-      resolve(groupChannel);
-    },
-  );
+  sdk.groupChannel.createChannel(params).then((groupChannel) => {
+    resolve(groupChannel);
+  }).catch((err) => { resolve(err); });
 });
 
 export default createChannel;

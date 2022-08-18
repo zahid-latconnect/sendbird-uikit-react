@@ -1,8 +1,4 @@
-1. Run npm build
-2. Update and replace dist/index.d.ts with scripts/index_d_ts
-3. Update and replace dist/package.json with scripts/package.template.json
-4. Update and replace dist/README.md with main README.md
-5. Make sure CSS is in dist/dist/index.css
-5. npm publish inside dist
-
-We do step 2 because half project is in TS and other half in JS. Will update tooling soon to fix this issue
+1. Run `npm run build`
+2. Add a package version to the `dist/package.json` and `dist/index.d.ts`
+3. `npm publish` inside dist
+   * Run `npm publish --tag beta` for beta

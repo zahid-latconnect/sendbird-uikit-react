@@ -1,9 +1,7 @@
-import './create-channel-ui.scss';
-
 import React from 'react';
 
 import { useCreateChannelContext } from '../../context/CreateChannelProvider';
-import InviteMembers from '../InviteMembers';
+import InviteUsers from '../InviteUsers';
 
 import SelectChannelType from '../SelectChannelType';
 
@@ -15,11 +13,11 @@ export interface CreateChannelUIProps {
 const CreateChannel: React.FC<CreateChannelUIProps> = (props: CreateChannelUIProps) => {
   const { onCancel, renderStepOne } = props;
 
-  const createChannelProps = useCreateChannelContext();
   const {
     step,
     setStep,
-  } = createChannelProps;
+    userListQuery,
+  } = useCreateChannelContext();
 
   return (
     <>
@@ -34,7 +32,8 @@ const CreateChannel: React.FC<CreateChannelUIProps> = (props: CreateChannelUIPro
       }
       {
         step === 1 && (
-          <InviteMembers
+          <InviteUsers
+            userListQuery={userListQuery}
             onCancel={() => {
               setStep(0);
               onCancel();

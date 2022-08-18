@@ -1,4 +1,7 @@
-import SendBird, { AdminMessage, Emoji, EmojiCategory, EmojiContainer, FileMessage, GroupChannel, GroupChannelListQuery, Member, MessageListParams, OpenChannel, Reaction, SendBirdInstance, User, UserMessage } from "sendbird";
+import SendbirdChat, { Emoji, EmojiCategory, EmojiContainer, User } from '@sendbird/chat';
+import type { GroupChannel, Member, SendbirdGroupChat, GroupChannelListQuery } from '@sendbird/chat/groupChannel';
+import type { AdminMessage, FileMessage, MessageListParams, Reaction, UserMessage } from '@sendbird/chat/message';
+import type { OpenChannel, SendbirdOpenChat } from '@sendbird/chat/openChannel';
 import { EveryMessage } from '../types';
 
 // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types
@@ -148,7 +151,6 @@ export const isSentStatus = (state: string): boolean => (
   || state === OutgoingMessageStates.DELIVERED
   || state === OutgoingMessageStates.READ
 );
-
 const isJsonString = (str) => {
   try {
     JSON.parse(str);
@@ -158,16 +160,18 @@ const isJsonString = (str) => {
   return true;
 }
 
-export const isAdminMessage = (message: AdminMessage): boolean => (
+export const isAdminMessage = (message: AdminMessage | UserMessage | FileMessage): boolean => (
   message && (message.isAdminMessage?.() || (message['messageType'] && message.messageType === 'admin'))
 );
-export const isUserMessage = (message: UserMessage): boolean => (
+export const isUserMessage = (message: AdminMessage | UserMessage | FileMessage): boolean => (
   message && (message.isUserMessage?.() || (message['messageType'] && message.messageType === 'user'))
 );
+
 export const isAppMessage = (message: UserMessage): boolean => (
   message && message.data && isJsonString(message.data) && JSON.parse(message.data)['sb_app']
 );
-export const isFileMessage = (message: FileMessage): boolean => (
+
+export const isFileMessage = (message: AdminMessage | UserMessage | FileMessage): boolean => (
   message && (message.isFileMessage?.() || (message['messageType'] && message.messageType === 'file'))
 );
 
@@ -181,14 +185,14 @@ export const isVideoMessage = (message: FileMessage): boolean => message && isTh
 export const isGifMessage = (message: FileMessage): boolean => message && isThumbnailMessage(message) && isGif(message.type);
 export const isAudioMessage = (message: FileMessage): boolean => message && isFileMessage(message) && isAudio(message.type);
 
-export const isEditedMessage = (message: UserMessage): boolean => isUserMessage(message) && (message?.updatedAt > 0);
+export const isEditedMessage = (message: AdminMessage | UserMessage | FileMessage): boolean => isUserMessage(message) && (message?.updatedAt > 0);
 export const isEnabledOGMessage = (message: UserMessage): boolean => (
   (!message || !message.ogMetaData || !message.ogMetaData.url) ? false : true
 );
 
 export const getUIKitMessageTypes = (): UIKitMessageTypes => ({ ...UIKitMessageTypes });
-export const getUIKitMessageType = (message: SendBird.UserMessage | SendBird.FileMessage | SendBird.AdminMessage): string => {
-  if (isAdminMessage(message as SendBird.AdminMessage)) return UIKitMessageTypes.ADMIN;
+export const getUIKitMessageType = (message: UserMessage | FileMessage | AdminMessage): string => {
+  if (isAdminMessage(message as AdminMessage)) return UIKitMessageTypes.ADMIN;
   if (isUserMessage(message as UserMessage)) {
     return isOGMessage(message as UserMessage) ? UIKitMessageTypes.OG : UIKitMessageTypes.TEXT;
   }
@@ -235,25 +239,25 @@ export const getEmojiTooltipString = (reaction: Reaction, userId: string, member
 interface UIKitStore {
   stores: {
     sdkStore: {
-      sdk: SendBirdInstance,
+      sdk: SendbirdChat | SendbirdOpenChat | SendbirdGroupChat,
     },
     userStore: {
       user: User,
     },
   },
   config: {
-    useReaction: boolean,
+    isReactionEnabled: boolean,
   }
 }
 export const getCurrentUserId = (store: UIKitStore): string => (store?.stores?.userStore?.user?.userId);
 export const getUseReaction = (store: UIKitStore, channel: GroupChannel | OpenChannel): boolean => {
-  if (!store?.config?.useReaction)
+  if (!store?.config?.isReactionEnabled)
     return false;
-  if (!store?.stores?.sdkStore?.sdk?.appInfo?.isUsingReaction)
+  if (!store?.stores?.sdkStore?.sdk?.appInfo?.useReaction)
     return false;
   if (channel?.isGroupChannel())
     return !((channel as GroupChannel).isBroadcast || (channel as GroupChannel).isSuper);
-  return store?.config?.useReaction;
+  return store?.config?.isReactionEnabled;
 };
 
 export const isMessageSentByMe = (userId: string, message: UserMessage | FileMessage): boolean => (
@@ -344,20 +348,21 @@ export const hasSameMembers = <T>(a: T[], b: T[]): boolean => {
 export const isFriend = (user: User): boolean => !!(user.friendDiscoveryKey || user.friendName);
 
 export const filterMessageListParams = (params: MessageListParams, message: UserMessage | FileMessage): boolean => {
-  if (params?.messageType && params.messageType !== message.messageType) {
+  // @ts-ignore
+  if (params?.messageTypeFilter && params.messageTypeFilter !== message.messageType) {
     return false;
   }
-  if (params?.customTypes?.length > 0) {
-    const customTypes = params.customTypes.filter((item) => item !== '*');
+  if (params?.customTypesFilter?.length > 0) {
+    const customTypes = params.customTypesFilter.filter((item) => item !== '*');
     // Because Chat SDK inserts '*' when customTypes is empty
     if (customTypes.length > 0 && !customTypes.includes(message.customType)) {
       return false;
     }
   }
-  if (params?.senderUserIds && params?.senderUserIds?.length > 0) {
-    if (message?.isUserMessage() || message.isFileMessage()) {
+  if (params?.senderUserIdsFilter && params?.senderUserIdsFilter?.length > 0) {
+    if (message?.isUserMessage?.() || message?.isFileMessage?.()) {
       const messageSender = (message as UserMessage | FileMessage).sender || message['_sender'];
-      if (!params?.senderUserIds?.includes(messageSender?.userId)) {
+      if (!params?.senderUserIdsFilter?.includes(messageSender?.userId)) {
         return false;
       }
     } else {
@@ -382,7 +387,7 @@ interface SDKChannelListParamsPrivateProps extends GroupChannelListQuery {
   };
 }
 export const filterChannelListParams = (params: SDKChannelListParamsPrivateProps, channel: GroupChannel, currentUserId: string): boolean => {
-  if (!params?.includeEmpty && channel?.lastMessage && channel.lastMessage === null) {
+  if (!params?.includeEmpty && channel?.lastMessage === null) {
     return false;
   }
   if (params?._searchFilter?.search_query && params._searchFilter.search_fields?.length > 0) {
@@ -393,10 +398,10 @@ export const filterChannelListParams = (params: SDKChannelListParamsPrivateProps
       if (!searchFields.some((searchField) => {
         switch (searchField) {
           case 'channel_name': {
-            return channel.name.toLowerCase().includes(searchQuery.toLowerCase());
+            return channel?.name?.toLowerCase().includes(searchQuery.toLowerCase());
           }
           case 'member_nickname': {
-            return channel.members.some((member: Member) => member.nickname.toLowerCase().includes(searchQuery.toLowerCase()));
+            return channel?.members?.some((member: Member) => member.nickname.toLowerCase().includes(searchQuery.toLowerCase()));
           }
           default: {
             return true;
@@ -411,12 +416,12 @@ export const filterChannelListParams = (params: SDKChannelListParamsPrivateProps
     const userIdsFilter = params._userIdsFilter;
     const { includeMode, queryType } = userIdsFilter;
     const userIds: string[] = userIdsFilter.userIds;
-    const memberIds = channel.members.map((member: Member) => member.userId);
+    const memberIds = channel?.members?.map((member: Member) => member.userId);
     if (!includeMode) { // exact match
       if (!userIds.includes(currentUserId)) {
         userIds.push(currentUserId); // add the caller's userId if not added already.
       }
-      if (channel.members.length > userIds.length) {
+      if (channel?.members?.length > userIds.length) {
         return false; // userIds may contain one or more non-member(s).
       }
       if (!hasSameMembers(userIds, memberIds)) {
@@ -466,8 +471,8 @@ export const filterChannelListParams = (params: SDKChannelListParamsPrivateProps
   if (params?.channelUrlsFilter?.length > 0 && !params.channelUrlsFilter.includes(channel?.url)) {
     return false;
   }
-  if (params?.memberStateFilter) {
-    switch (params.memberStateFilter) {
+  if (params?.myMemberStateFilter) {
+    switch (params.myMemberStateFilter) {
       case 'joined_only':
         if (channel?.myMemberState !== 'joined') {
           return false;
@@ -479,12 +484,12 @@ export const filterChannelListParams = (params: SDKChannelListParamsPrivateProps
         }
         break;
       case 'invited_by_friend':
-        if (channel?.myMemberState !== 'invited' || !isFriend(channel.inviter)) {
+        if (channel?.myMemberState !== 'invited' || !isFriend(channel?.inviter)) {
           return false;
         }
         break;
       case 'invited_by_non_friend':
-        if (channel?.myMemberState !== 'invited' || isFriend(channel.inviter)) {
+        if (channel?.myMemberState !== 'invited' || isFriend(channel?.inviter)) {
           return false;
         }
         break;
@@ -569,8 +574,8 @@ export const binarySearch = (list: Array<number>, number: number): number => {//
 };
 // This is required when channel is displayed on channel list by filter
 export const getChannelsWithUpsertedChannel = (channels: Array<GroupChannel>, channel: GroupChannel): Array<GroupChannel> => {
-  if (channels.some((ch: GroupChannel) => ch.url === channel.url)) {
-    return channels.map((ch: GroupChannel) => (ch.url === channel.url ? channel : ch));
+  if (channels.some((ch: GroupChannel) => ch.url === channel?.url)) {
+    return channels.map((ch: GroupChannel) => (ch.url === channel?.url ? channel : ch));
   }
   const targetIndex = binarySearch(
     channels.map((channel: GroupChannel) => channel?.lastMessage?.createdAt || channel?.createdAt),
@@ -579,7 +584,7 @@ export const getChannelsWithUpsertedChannel = (channels: Array<GroupChannel>, ch
   return [...channels.slice(0, targetIndex), channel, ...channels.slice(targetIndex, channels.length)];
 };
 
-export const getMatchedUserIds = (word: string, users: Array<SendBird.User>, _template?: string): boolean => {
+export const getMatchedUserIds = (word: string, users: Array<User>, _template?: string): boolean => {
   const template = _template || '@'; // Use global variable
   // const matchedUserIds = [];
   // users.map((user) => user?.userId).forEach((userId) => {
@@ -598,7 +603,7 @@ export interface StringObj {
   userId?: string;
 }
 
-export const convertWordToStringObj = (word: string, _users: Array<SendBird.User>, _template?: string): Array<StringObj> => {
+export const convertWordToStringObj = (word: string, _users: Array<User>, _template?: string): Array<StringObj> => {
   const users = _users || [];
   const template = _template || '@'; // Use global variable
   const resultArray = [];

@@ -1,4 +1,4 @@
-import { EveryMessage } from '../../../../index';
+import { AdminMessage, FileMessage, UserMessage } from '@sendbird/chat/message';
 import { isImage, isVideo } from '../../../../ui/FileViewer/types';
 
 export const MessageTypes = {
@@ -17,17 +17,17 @@ export const SendingMessageStatus = {
   PENDING: 'pending',
 };
 
-export const getMessageType = (message: EveryMessage): string => {
-  if ((message.isUserMessage && message.isUserMessage()) || message.messageType === 'user') {
-    return (message.ogMetaData)
+export const getMessageType = (message: UserMessage | FileMessage | AdminMessage): string => {
+  if ((message?.isUserMessage?.()) || message?.messageType === 'user') {
+    return (message?.ogMetaData)
       ? MessageTypes.OG
       : MessageTypes.USER;
   }
-  if (message.isAdminMessage && message.isAdminMessage()) {
+  if (message?.isAdminMessage?.()) {
     return MessageTypes.ADMIN;
   }
-  if (message.messageType === 'file') {
-    return (isImage(message.type) || isVideo(message.type))
+  if (message?.messageType === 'file') {
+    return (isImage((message as FileMessage).type) || isVideo((message as FileMessage).type))
       ? MessageTypes.THUMBNAIL
       : MessageTypes.FILE;
   }

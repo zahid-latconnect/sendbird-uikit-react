@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import SendBirdProvider from '../Sendbird';
 import withSendBird from '../SendbirdSdkContext';
-import sendBirdSelectors from '../selectors';
+import sendbirdSelectors from '../selectors';
 import Channel from '../../smart-components/Channel';
 
 const appId = process.env.STORYBOOK_APP_ID;
@@ -17,7 +17,6 @@ const CustomComponent = (props) => {
     sendFileMessage,
     deleteMessage,
     updateLastMessage,
-    sdk,
   } = props;
   const [lastMessage, setLastMessage] = useState({});
   const lastMessageId = lastMessage.messageId;
@@ -26,8 +25,9 @@ const CustomComponent = (props) => {
       {`Last MessageId: ${lastMessageId}`}
       <button onClick={
         () => {
-          const params = new sdk.UserMessageParams();
-          params.message = "storybook message";
+          const params = {
+            message: "storybook message",
+          };
           sendMessage(channelUrl, params)
             .then((pendingMessage) => {
               setLastMessage(pendingMessage);
@@ -47,8 +47,9 @@ const CustomComponent = (props) => {
       }>Send a Message</button>
       <button disable={!lastMessageId} onClick={
         () => {
-          const params = new sdk.UserMessageParams();
-          params.message = "updated storybook message";
+          const params = {
+            message: "updated storybook message",
+          };
           updateLastMessage(channelUrl, lastMessageId, params)
             .then((message) => {
               setLastMessage(message);
@@ -73,7 +74,7 @@ const CustomComponent = (props) => {
       <input type="file" id="file-upload" />
       <button onClick={
         () => {
-          const params = new sdk.FileMessageParams();
+          const params = {};
           params.file = document.getElementById('file-upload').files[0];
           sendFileMessage(channelUrl, params)
             .then((pendingMessage) => {
@@ -94,7 +95,7 @@ const CustomComponent = (props) => {
       }>Send file Message</button>
       <button onClick={
         () => {
-          const params = new sdk.FileMessageParams();
+          const params = {};
           params.name = "my file";
           params.fileUrl = "https://6cro14eml0v2yuvyx3v5j11j-wpengine.netdna-ssl.com/wp-content/uploads/img-home-hero@2x.png";
           params.mimeType = "image/png";
@@ -124,11 +125,11 @@ const CustomComponent = (props) => {
 };
 
 const CustomComponentWithSendBird = withSendBird(CustomComponent, (state) => {
-  const sendMessage = sendBirdSelectors.getSendUserMessage(state);
-  const sendFileMessage = sendBirdSelectors.getSendFileMessage(state);
-  const deleteMessage = sendBirdSelectors.getDeleteMessage(state);
-  const updateLastMessage = sendBirdSelectors.getUpdateUserMessage(state);
-  const sdk = sendBirdSelectors.getSdk(state);
+  const sendMessage = sendbirdSelectors.getSendUserMessage(state);
+  const sendFileMessage = sendbirdSelectors.getSendFileMessage(state);
+  const deleteMessage = sendbirdSelectors.getDeleteMessage(state);
+  const updateLastMessage = sendbirdSelectors.getUpdateUserMessage(state);
+  const sdk = sendbirdSelectors.getSdk(state);
   return ({
     sendMessage,
     sendFileMessage,

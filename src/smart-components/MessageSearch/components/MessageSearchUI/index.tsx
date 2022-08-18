@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
+import type { FileMessage, UserMessage } from '@sendbird/chat/message';
 import './index.scss';
 
 import { LocalizationContext } from '../../../../lib/LocalizationContext';
-import { useMessageSearch } from '../../context/MessageSearchProvider';
+import { useMessageSearchContext } from '../../context/MessageSearchProvider';
 
 import MessageSearchItem from '../../../../ui/MessageSearchItem';
 import PlaceHolder, { PlaceHolderTypes } from '../../../../ui/PlaceHolder';
@@ -50,7 +51,7 @@ export const MessageSearchUI: React.FC<MessageSearchUIProps> = ({
     onResultClick,
     selectedMessageId,
     setSelectedMessageId,
-  } = useMessageSearch();
+  } = useMessageSearchContext();
 
   const { stringSet } = useContext(LocalizationContext);
 
@@ -133,7 +134,7 @@ export const MessageSearchUI: React.FC<MessageSearchUIProps> = ({
                 return (
                   <MessageSearchFileItem
                     className={`${COMPONENT_CLASS_NAME}__message-search-item`}
-                    message={message}
+                    message={message as FileMessage}
                     key={message.messageId}
                     selected={(selectedMessageId === message.messageId)}
                     onClick={() => {
@@ -146,7 +147,7 @@ export const MessageSearchUI: React.FC<MessageSearchUIProps> = ({
               return (
                 <MessageSearchItem
                   className={`${COMPONENT_CLASS_NAME}__message-search-item`}
-                  message={message}
+                  message={message as UserMessage}
                   key={message.messageId}
                   selected={(selectedMessageId === message.messageId)}
                   onClick={() => {

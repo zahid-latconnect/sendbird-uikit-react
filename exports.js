@@ -7,9 +7,15 @@ export default {
 
   // SendbirdProvider
   SendbirdProvider: 'src/lib/Sendbird.jsx',
-  sendBirdSelectors: 'src/lib/selectors.js',
+  sendbirdSelectors: 'src/lib/selectors.ts',
   useSendbirdStateContext: 'src/hooks/useSendbirdStateContext.tsx',
-  withSendBird: 'src/lib/SendbirdSdkContext.jsx',
+  withSendbird: 'src/lib/SendbirdSdkContext.jsx',
+
+  // handlers - experimental
+  'handlers/ConnectionHandler': 'src/lib/handlers/ConnectionHandler.ts',
+  'handlers/GroupChannelHandler': 'src/lib/handlers/GroupChannelHandler.ts',
+  'handlers/OpenChannelHandler': 'src/lib/handlers/OpenChannelHandler.ts',
+  'handlers/UserEventHandler': 'src/lib/handlers/UserEventHandler.ts',
 
   // ChannelList
   ChannelList: 'src/smart-components/ChannelList/index.tsx',
@@ -23,7 +29,7 @@ export default {
   // ChannelSettings
   ChannelSettings: 'src/smart-components/ChannelSettings/index.tsx',
   'ChannelSettings/context': 'src/smart-components/ChannelSettings/context/ChannelSettingsProvider.tsx',
-  'ChannelSettings/components/AdminPanel': 'src/smart-components/ChannelSettings/components/AdminPanel/index.tsx',
+  'ChannelSettings/components/ModerationPanel': 'src/smart-components/ChannelSettings/components/ModerationPanel/index.tsx',
   'ChannelSettings/components/ChannelProfile': 'src/smart-components/ChannelSettings/components/ChannelProfile/index.tsx',
   'ChannelSettings/components/ChannelSettingsUI': 'src/smart-components/ChannelSettings/components/ChannelSettingsUI/index.tsx',
   'ChannelSettings/components/EditDetailsModal': 'src/smart-components/ChannelSettings/components/EditDetailsModal/index.tsx',
@@ -74,7 +80,7 @@ export default {
   CreateChannel: 'src/smart-components/CreateChannel/index.tsx',
   'CreateChannel/context': 'src/smart-components/CreateChannel/context/CreateChannelProvider.tsx',
   'CreateChannel/components/CreateChannelUI': 'src/smart-components/CreateChannel/components/CreateChannelUI/index.tsx',
-  'CreateChannel/components/InviteMembers': 'src/smart-components/CreateChannel/components/InviteMembers/index.tsx',
+  'CreateChannel/components/InviteUsers': 'src/smart-components/CreateChannel/components/InviteUsers/index.tsx',
   'CreateChannel/components/SelectChannelType': 'src/smart-components/CreateChannel/components/SelectChannelType.tsx',
 
   // EditUserProfile
@@ -94,7 +100,7 @@ export default {
   'ui/OpenChannelAvatar': 'src/ui/ChannelAvatar/OpenChannelAvatar.tsx',
   'ui/ChannelPreview': 'src/ui/ChannelPreview/index.jsx',
   'ui/ChatHeader': 'src/ui/ChatHeader/index.jsx',
-  'ui/Checkbox': 'src/ui/Checkbox/index.jsx',
+  'ui/Checkbox': 'src/ui/Checkbox/index.tsx',
   'ui/ConnectionStatus': 'src/ui/ConnectionStatus/index.jsx',
   'ui/ContextMenu': 'src/ui/ContextMenu/index.jsx',
   'ui/DateSeparator': 'src/ui/DateSeparator/index.jsx',
@@ -110,6 +116,7 @@ export default {
   'ui/LinkLabel': 'src/ui/LinkLabel/index.jsx',
   'ui/Loader': 'src/ui/Loader/index.jsx',
   'ui/MentionUserLabel': 'src/ui/MentionUserLabel/index.tsx',
+  'ui/MentionLabel': 'src/ui/MentionLabel/index.tsx',
   'ui/MessageContent': 'src/ui/MessageContent/index.tsx',
   'ui/MessageInput': 'src/ui/MessageInput/index.jsx',
   'ui/MessageItemMenu': 'src/ui/MessageItemMenu/index.tsx',
@@ -120,7 +127,6 @@ export default {
   'ui/Modal': 'src/ui/Modal/index.jsx',
   'ui/OGMessageItemBody': 'src/ui/OGMessageItemBody/index.tsx',
   'ui/OpenChannelAdminMessage': 'src/ui/OpenChannelAdminMessage/index.tsx',
-  'ui/OpenChannelMessageContent': 'src/ui/OpenChannelMessageContent/index.tsx',
   // should we rename it to OpenChannel?
   'ui/OpenchannelConversationHeader': 'src/ui/OpenchannelConversationHeader/index.tsx',
   'ui/OpenchannelFileMessage': 'src/ui/OpenchannelFileMessage/index.tsx',
@@ -139,6 +145,7 @@ export default {
   'ui/Tooltip': 'src/ui/Tooltip/index.jsx',
   'ui/TooltipWrapper': 'src/ui/TooltipWrapper/index.jsx',
   'ui/UnknownMessageItemBody': 'src/ui/UnknownMessageItemBody/index.tsx',
-  'ui/UserListItem': 'src/ui/UserListItem/index.jsx',
+  'ui/UserListItem': 'src/ui/UserListItem/index.tsx',
   'ui/UserProfile': 'src/ui/UserProfile/index.tsx',
+  'ui/Word': 'src/ui/Word/index.tsx',
 };

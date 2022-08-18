@@ -11,7 +11,6 @@ function useUpdateMessageCallback({
 }, {
   logger,
   pubSub,
-  sdk,
 }) {
   return useCallback((props, callback) => {
     const {
@@ -21,7 +20,7 @@ function useUpdateMessageCallback({
       mentionTemplate,
     } = props;
     const createParamsDefault = () => {
-      const params = new sdk.UserMessageParams();
+      const params = {};
       params.message = message;
       if (isMentionEnabled && mentionedUsers?.length > 0) {
         params.mentionedUsers = mentionedUsers;
@@ -45,39 +44,29 @@ function useUpdateMessageCallback({
       ? onBeforeUpdateUserMessage(message)
       : createParamsDefault(message);
 
-    currentGroupChannel.updateUserMessage(messageId, params, (r, e) => {
-      logger.info('Channel: Updating message!', params);
-      const swapParams = sdk.getErrorFirstCallback();
-      let msg = r;
-      let err = e;
-      if (swapParams) {
-        msg = e;
-        err = r;
-      }
+    logger.info('Channel: Updating message!', params);
+    currentGroupChannel.updateUserMessage(messageId, params).then((msg, err) => {
       if (callback) {
         callback(err, msg);
       }
-      if (!err) {
-        logger.info('Channel: Updating message success!', msg);
-        messagesDispatcher({
-          type: messageActionTypes.ON_MESSAGE_UPDATED,
-          payload: {
-            channel: currentGroupChannel,
-            message: msg,
-          },
-        });
-        pubSub.publish(
-          topics.UPDATE_USER_MESSAGE,
-          {
-            message: msg,
-            channel: currentGroupChannel,
-          },
-        );
-      } else {
-        logger.warning('Channel: Updating message failed!', err);
-      }
+
+      logger.info('Channel: Updating message success!', msg);
+      messagesDispatcher({
+        type: messageActionTypes.ON_MESSAGE_UPDATED,
+        payload: {
+          channel: currentGroupChannel,
+          message: msg,
+        },
+      });
+      pubSub.publish(
+        topics.UPDATE_USER_MESSAGE,
+        {
+          message: msg,
+          channel: currentGroupChannel,
+        },
+      );
     });
-  }, [currentGroupChannel.url, messagesDispatcher, onBeforeUpdateUserMessage]);
+  }, [currentGroupChannel?.url, messagesDispatcher, onBeforeUpdateUserMessage]);
 }
 
 export default useUpdateMessageCallback;

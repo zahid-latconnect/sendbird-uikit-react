@@ -1,17 +1,20 @@
-import Sendbird from 'sendbird';
+import type { UserMessageCreateParams } from '@sendbird/chat/message';
+import type { OpenChannel, SendbirdOpenChat } from '@sendbird/chat/openChannel';
+
 import { useCallback } from 'react';
+import type { Logger } from '../../../../lib/SendbirdState';
 import * as messageActionTypes from '../dux/actionTypes';
 import * as utils from '../utils';
 
 interface DynamicParams {
-  currentOpenChannel: SendbirdUIKit.OpenChannelType;
-  onBeforeSendUserMessage: (text: string) => Sendbird.UserMessageParams;
+  currentOpenChannel: OpenChannel;
+  onBeforeSendUserMessage: (text: string) => UserMessageCreateParams;
   checkScrollBottom: () => boolean;
   messageInputRef: React.RefObject<HTMLInputElement>;
 }
 interface StaticParams {
-  sdk: SendbirdUIKit.Sdk;
-  logger: SendbirdUIKit.Logger;
+  sdk: SendbirdOpenChat;
+  logger: Logger;
   messagesDispatcher: ({ type: string, payload: any }) => void;
 }
 
@@ -20,12 +23,13 @@ function useSendMessageCallback(
   { sdk, logger, messagesDispatcher }: StaticParams,
 ): () => void {
   return useCallback(() => {
-    if (sdk && sdk.UserMessageParams) {
-      const text = messageInputRef.current.value;
-      const createParamsDefault = (txt: string | number): Sendbird.UserMessageParams => {
+    if (sdk) {
+      const text = messageInputRef.current.innerText;
+      const createParamsDefault = (txt: string | number): UserMessageCreateParams => {
         const message = typeof txt === 'string' ? txt.trim() : txt.toString(10).trim();
-        const params = new sdk.UserMessageParams();
-        params.message = message;
+        const params: UserMessageCreateParams = {
+          message: message,
+        };
         return params;
       }
       const createCustomParams = onBeforeSendUserMessage && typeof onBeforeSendUserMessage === 'function';
@@ -36,8 +40,19 @@ function useSendMessageCallback(
       logger.info('OpenChannel | useSendMessageCallback: Sending message has started', params);
 
       const isBottom = checkScrollBottom();
-      const pendingMessage = currentOpenChannel.sendUserMessage(params, (message, error) => {
-        if (!error) {
+      let pendingMsg = null;
+      currentOpenChannel.sendUserMessage(params)
+        .onPending((pendingMessage) => {
+          messagesDispatcher({
+            type: messageActionTypes.SENDING_MESSAGE_START,
+            payload: {
+              message: pendingMessage,
+              channel: currentOpenChannel,
+            }
+          });
+          pendingMsg = pendingMessage;
+        })
+        .onSucceeded((message) => {
           logger.info('OpenChannel | useSendMessageCallback: Sending message succeeded', message);
           messagesDispatcher({
             type: messageActionTypes.SENDING_MESSAGE_SUCCEEDED,
@@ -48,14 +63,16 @@ function useSendMessageCallback(
               utils.scrollIntoLast();
             });
           }
-        } else {
+        })
+        .onFailed((error) => {
           logger.warning('OpenChannel | useSendMessageCallback: Sending message failed', error);
           messagesDispatcher({
             type: messageActionTypes.SENDING_MESSAGE_FAILED,
-            payload: message,
+            payload: pendingMsg,
           });
           // https://sendbird.com/docs/chat/v3/javascript/guides/error-codes#2-server-error-codes
           // TODO: Do we need to handle the error cases?
+          // @ts-ignore
           if (error?.code === 900041) {
             messagesDispatcher({
               type: messageActionTypes.ON_USER_MUTED,
@@ -65,15 +82,7 @@ function useSendMessageCallback(
               },
             });
           }
-        }
-      });
-      messagesDispatcher({
-        type: messageActionTypes.SENDING_MESSAGE_START,
-        payload: {
-          message: pendingMessage,
-          channel: currentOpenChannel,
-        }
-      });
+        });
     }
   }, [currentOpenChannel, onBeforeSendUserMessage, checkScrollBottom, messageInputRef]);
 }

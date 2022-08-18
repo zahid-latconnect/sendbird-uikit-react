@@ -4,7 +4,8 @@ import React, {
   useReducer,
   useMemo,
 } from 'react';
-import SendBird from 'sendbird';
+import type { FileMessageCreateParams, UserMessageCreateParams } from '@sendbird/chat/message';
+import type { SendbirdOpenChat } from '@sendbird/chat/openChannel';
 
 import * as utils from './utils';
 import { UserProfileProvider } from '../../../lib/UserProfileContext';
@@ -56,11 +57,11 @@ type OpenChannelQueries = {
 export interface OpenChannelProviderProps {
   channelUrl: string;
   children?: React.ReactNode;
-  useMessageGrouping?: boolean;
+  isMessageGroupingEnabled?: boolean;
   queries?: OpenChannelQueries;
   messageLimit?: number;
-  onBeforeSendUserMessage?(text: string): SendBird.UserMessageParams;
-  onBeforeSendFileMessage?(file_: File): SendBird.FileMessageParams;
+  onBeforeSendUserMessage?(text: string): UserMessageCreateParams;
+  onBeforeSendFileMessage?(file_: File): FileMessageCreateParams;
   onChatHeaderActionClick?(): void;
   disableUserProfile?: boolean;
   renderUserProfile?: (props: RenderUserProfileProps) => React.ReactNode;
@@ -91,7 +92,7 @@ const OpenChannelProvider: React.FC<OpenChannelProviderProps> = (props: OpenChan
   const {
     channelUrl,
     children,
-    useMessageGrouping,
+    isMessageGroupingEnabled,
     queries,
     onBeforeSendUserMessage,
     messageLimit,
@@ -103,7 +104,7 @@ const OpenChannelProvider: React.FC<OpenChannelProviderProps> = (props: OpenChan
   const fetchingParticipants = false;
   const globalStore = useSendbirdStateContext();
 
-  const sdk = globalStore?.stores?.sdkStore?.sdk;
+  const sdk = globalStore?.stores?.sdkStore?.sdk as SendbirdOpenChat;
   const sdkInit = globalStore?.stores?.sdkStore?.initialized;
   const user = globalStore?.stores?.userStore?.user;
   const config = globalStore?.config;
@@ -167,7 +168,7 @@ const OpenChannelProvider: React.FC<OpenChannelProviderProps> = (props: OpenChan
   );
   useInitialMessagesFetch(
     { currentOpenChannel, userFilledMessageListParams },
-    { sdk, logger, messagesDispatcher },
+    { logger, messagesDispatcher },
   );
 
   const fetchMore: boolean = utils.shouldFetchMore(allMessages?.length, messageLimit);
@@ -186,7 +187,7 @@ const OpenChannelProvider: React.FC<OpenChannelProviderProps> = (props: OpenChan
   );
   const updateMessage = useUpdateMessageCallback(
     { currentOpenChannel, onBeforeSendUserMessage },
-    { sdk, logger, messagesDispatcher },
+    { logger, messagesDispatcher },
   );
   const deleteMessage = useDeleteMessageCallback(
     { currentOpenChannel },
@@ -211,7 +212,7 @@ const OpenChannelProvider: React.FC<OpenChannelProviderProps> = (props: OpenChan
     subscriber.set(topics.SEND_USER_MESSAGE, pubSub.subscribe(topics.SEND_USER_MESSAGE, (msg) => {
       const { channel, message } = msg;
       scrollIntoLast();
-      if (channel && (channelUrl === channel.url)) {
+      if (channel && (channelUrl === channel?.url)) {
         messagesDispatcher({
           type: messageActionTypes.SENDING_MESSAGE_SUCCEEDED,
           payload: message,
@@ -220,7 +221,7 @@ const OpenChannelProvider: React.FC<OpenChannelProviderProps> = (props: OpenChan
     }));
     subscriber.set(topics.SEND_MESSAGE_START, pubSub.subscribe(topics.SEND_MESSAGE_START, (msg) => {
       const { channel, message } = msg;
-      if (channel && (channelUrl === channel.url)) {
+      if (channel && (channelUrl === channel?.url)) {
         messagesDispatcher({
           type: messageActionTypes.SENDING_MESSAGE_START,
           payload: { message, channel },
@@ -230,7 +231,7 @@ const OpenChannelProvider: React.FC<OpenChannelProviderProps> = (props: OpenChan
     subscriber.set(topics.SEND_FILE_MESSAGE, pubSub.subscribe(topics.SEND_FILE_MESSAGE, (msg) => {
       const { channel, message } = msg;
       scrollIntoLast();
-      if (channel && (channelUrl === channel.url)) {
+      if (channel && (channelUrl === channel?.url)) {
         messagesDispatcher({
           type: messageActionTypes.SENDING_MESSAGE_SUCCEEDED,
           payload: { message, channel },
@@ -239,7 +240,7 @@ const OpenChannelProvider: React.FC<OpenChannelProviderProps> = (props: OpenChan
     }));
     subscriber.set(topics.UPDATE_USER_MESSAGE, pubSub.subscribe(topics.UPDATE_USER_MESSAGE, (msg) => {
       const { channel, message, fromSelector } = msg;
-      if (fromSelector && channel && (channelUrl === channel.url)) {
+      if (fromSelector && channel && (channelUrl === channel?.url)) {
         messagesDispatcher({
           type: messageActionTypes.ON_MESSAGE_UPDATED,
           payload: { channel, message },
@@ -248,7 +249,7 @@ const OpenChannelProvider: React.FC<OpenChannelProviderProps> = (props: OpenChan
     }));
     subscriber.set(topics.DELETE_MESSAGE, pubSub.subscribe(topics.DELETE_MESSAGE, (msg) => {
       const { channel, messageId } = msg;
-      if (channel && (channelUrl === channel.url)) {
+      if (channel && (channelUrl === channel?.url)) {
         messagesDispatcher({
           type: messageActionTypes.ON_MESSAGE_DELETED,
           payload: messageId,
@@ -268,12 +269,23 @@ const OpenChannelProvider: React.FC<OpenChannelProviderProps> = (props: OpenChan
       }
     };
   }, [channelUrl, sdkInit]);
+
+  // Exit channel when unmount
+  useEffect(() => () => {
+    if (currentOpenChannel && currentOpenChannel.exit) {
+      currentOpenChannel.exit()
+        .then(() => {
+          logger.info('OpenChannel | useSetChannel: Succeeded to exit channel');
+        });
+    }
+  }, [currentOpenChannel]);
+
   return (
     <OpenChannelContext.Provider value={{
       // props
       channelUrl,
       children,
-      useMessageGrouping,
+      isMessageGroupingEnabled,
       queries,
       onBeforeSendUserMessage,
       messageLimit,
@@ -318,6 +330,9 @@ const OpenChannelProvider: React.FC<OpenChannelProviderProps> = (props: OpenChan
 }
 
 export type UseOpenChannelType = () => OpenChannelInterface;
-const useOpenChannel: UseOpenChannelType = () => React.useContext(OpenChannelContext);
+const useOpenChannelContext: UseOpenChannelType = () => React.useContext(OpenChannelContext);
 
-export { OpenChannelProvider, useOpenChannel };
+export {
+  OpenChannelProvider,
+  useOpenChannelContext,
+};
