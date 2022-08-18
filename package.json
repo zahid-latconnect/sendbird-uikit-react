@@ -52,14 +52,11 @@
     "react-dom": "^16.8.6 || ^17.0.0 || ^18.0.0"
   },
   "dependencies": {
-    "css-vars-ponyfill": "^2.3.2",
-    "date-fns": "^2.16.1",
-    "prop-types": "^15.7.2",
-    "react-markdown": "^7.0.3",
     "@sendbird/chat": "^4.0.4",
     "css-vars-ponyfill": "^2.3.2",
     "date-fns": "^2.16.1",
-    "prop-types": "^15.7.2"
+    "prop-types": "^15.7.2",
+    "react-markdown": "^8.0.3"
   },
   "bugs": {
     "url": "https://community.sendbird.com"
@@ -117,6 +114,7 @@
     "react-test-renderer": "^17.0.2",
     "rollup": "^2.53.1",
     "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-polyfill-node": "^0.10.1",
     "rollup-plugin-postcss": "^4.0.0",
     "rollup-plugin-scss": "^3.0.0",
