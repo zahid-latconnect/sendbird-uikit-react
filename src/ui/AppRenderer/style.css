@@ -1,60 +1,15 @@
-.markdown-container {
+.sendbird-app img {
   width: 100%;
-  box-sizing: border-box;
-  position: relative;
-  display: inline-block;
-  padding: 12px 12px;
-  border-radius: 16px;
-  word-break: break-word;
-  color: var(--sendbird-light-ondark-01);
-  background-color: var(--sendbird-light-primary-300);
 }
 
-.markdown-container img {
+.sendbird-app img[src*='#hero'] {
+  margin-left: -12px;
+  width: calc(100% + 24px);
+  border-radius:16px  16px 0px 0px;
+  margin-top: -24px;
+}
+
+.sendbird-app__button{
   width: 100%;
-  height: 100%;
-  max-width: 376px;
-  max-height: 282px;
-  border-radius: 10px;
-  margin-bottom: 5px;
 }
 
-.markdown-container h4 {
-  font-size: 12px;
-  font-weight: normal;
-  font-stretch: normal;
-  font-style: normal;
-  letter-spacing: normal;
-  font-family: var(--sendbird-font-family-default);
-  width: 100%;
-  box-sizing: border-box;
-  margin-top: 0px;
-  margin-bottom: 5px;
-}
-
-.markdown-container p {
-  margin: 0px;
-}
-
-
-.app-button-secondary{
-  font-size: 12px;
-  font-family: var(--sendbird-font-family-default);
-  color: white;
-  background-color: var(--sendbird-light-primary-300);
-  border-radius: 5px;
-  border: white solid 0.5px;
-  padding: 5px;
-  margin-left: 5px;
-}
-
-.app-button-primary{
-    font-weight: bold;
-    font-family: var(--sendbird-font-family-default);
-    font-size: 12px;
-    color: var(--sendbird-light-primary-300);
-    background-color: white;
-    border-radius: 5px;
-    border: var(--sendbird-light-primary-300) solid 0.5px;
-    padding: 5px;
-}

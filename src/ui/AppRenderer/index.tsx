@@ -1,4 +1,6 @@
 import React, { useState, useRef } from 'react';
+import { getClassName } from '../../utils';
+
 import MarkdownRenderer from './MarkdownRenderer';
 import './style.css'
 
@@ -16,7 +18,7 @@ interface AppRendererProps {
 
 
 
-const AppRenderer = ({ message, appManifests, sendCommand, isByMe }: AppRendererProps) => {
+const AppRenderer = ({ className, message, appManifests, sendCommand, isByMe }: AppRendererProps) => {
     const appData = JSON.parse(message.data).sb_app;
     if (!!appData.isDraft && !isByMe) {
         return null;
@@ -34,10 +36,16 @@ const AppRenderer = ({ message, appManifests, sendCommand, isByMe }: AppRenderer
         const messageText = message.message;
         sendCommand(url, params, 'button', messageText, channelUrl, messageId);
     }
-    return <div className='app-ui'>
+    return <div className={getClassName([
+        className,
+        'sendbird-text-message-item-body',
+        'sendbird-app',
+        isByMe ? 'outgoing' : 'incoming',
+
+    ])}>
         <MarkdownRenderer markdown={appData.ui} handleButtonClick={handleButtonClick} />
 
-    </div>
+    </div >
 }
 
 export default AppRenderer;

@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import visit from 'unist-util-visit';
+import Label, { LabelTypography, LabelColors } from '../Label';
+import Button, { ButtonTypes, ButtonSizes } from '../Button';
+
 console.log(visit);
 const find = /[\t ]*(?:\r?\n|\r)/g
 
@@ -47,58 +50,38 @@ function remarkMessageExtentionSyntax(options) {
 interface MarkdownRendererProps {
     markdown: string
 }
-const MarkdownRenderer = ({ markdown, handleButtonClick }: MarkdownRendererProps): JSX.Element => {
-    console.log('markdown', markdown);
+const MarkdownRendererMemo = ({ markdown, handleButtonClick }: MarkdownRendererProps): JSX.Element => {
     const [showPollResults, setPollShowResults] = React.useState(false);
     const mockPollMarkdown = "[poll: Do you prefer JavaScript or TypeScript?](option1=JavaScript,option2=TypeScript,option1Result=39,option2Result=60)"
+    const mockMarkdown = "![alt promotion hero image](https://scout-poc.pages.dev/static/media/banner-renew.fa578f5b.png#hero)  &nbsp;\n  #### Renew today and get 20% off annual subscription! That's free for 2 months. \n &nbsp; [button:Renew]()"
+    const mockMarkdownTwoLines = 'Line 1 \nLine 2'
+    const ReactMarkdownMemo = React.useMemo(() => {
+
+        console.log('markdown', markdown);
 
 
-    return <div className='markdown-container'>
-        <ReactMarkdown components={{
-            'button': ({ node }) => {
-                return <button className="app-button-secondary" onClick={() => handleButtonClick(node.properties)}>{node.children[0].value}</button>
-            },
-            'poll': ({ node }) => {
-                if (showPollResults) {
-                    return <>
-                        <h1>{node.children[0].value}</h1>
-                        <div>
-                            {node.properties.option1} {node.properties.option1Result}
 
-                        </div>
-                        <div>
-                            {node.properties.option2} {node.properties.option2Result}
-                        </div>
-                    </>
+        return (
+            <ReactMarkdown components={{
+                p: ({ node, ...props }) => <Label color={LabelTypography.PRIMARY} type={LabelTypography.BODY_1} {...props} />,
+                h4: ({ node, ...props }) => <Label color={LabelTypography.PRIMARY} type={LabelTypography.SUBTITLE_2} {...props} />,
+                'button': ({ node }) => {
+                    return <Button
+                        className="sendbird-app__button"
+                        type={ButtonTypes.SECONDARY}
+                        size={ButtonSizes.SMALL}
+                        onClick={() => handleButtonClick(node.properties)}>{node.children[0].value}</Button>
                 }
-                return (
-                    <>
-                        <h1>{node.children[0].value}</h1>
-                        <button className="app-button-secondary"
-                            onClick={() => {
-                                setPollShowResults(true);
-                                handleButtonClick({ id: 1 });
-                            }
-                            }>
-                            {node.properties.option1}
-                        </button>
-                        <button className="app-button-secondary"
-                            onClick={
-                                () => {
-                                    setPollShowResults(true);
-                                    handleButtonClick({ id: 2 })
-                                }
-                            }>
-                            {node.properties.option2}
-                        </button>
-
-                    </>
-                )
-            }
-        }}
-            rehypePlugins={[remarkMessageExtentionSyntax]}
-            children={markdown} />
-    </div >
+            }}
+                remarkPlugins={[]}
+                rehypePlugins={[remarkMessageExtentionSyntax]}
+                children={mockMarkdown}
+            />
+        )
+    }, [markdown]);
+    return ReactMarkdownMemo
 }
+
+const MarkdownRenderer = React.memo(MarkdownRendererMemo);
 
 export default MarkdownRenderer;
