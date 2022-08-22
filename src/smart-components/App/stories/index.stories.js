@@ -53,7 +53,7 @@ export const basicSDK = () => fitPageSize(
     isReactionEnabled
     isTypingIndicatorEnabledOnChannelList
     isMessageReceiptStatusEnabledOnChannelList
-    /*config={{ logLevel: 'all' }}*/
+  /*config={{ logLevel: 'all' }}*/
   />
 );
 
@@ -61,6 +61,11 @@ const appManifests = [
   {
     "name": "basic-chat-app",
     "url": "http://localhost:8283/basic-chat-app",
+    "command": "basic"
+  },
+  {
+    "name": "promotion-app",
+    "url": "http://localhost:8284/app",
     "command": "basic"
   }
 ]
