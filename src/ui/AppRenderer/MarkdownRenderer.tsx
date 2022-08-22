@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import visit from 'unist-util-visit';
 import Label, { LabelTypography, LabelColors } from '../Label';
 import Button, { ButtonTypes, ButtonSizes } from '../Button';
+import remarkGfm from 'remark-gfm'
 
 console.log(visit);
 const find = /[\t ]*(?:\r?\n|\r)/g
@@ -43,6 +44,17 @@ function remarkMessageExtentionSyntax(options) {
 
             }
 
+            // support header in table
+            if (node.tagName === 'td' && node.type === 'element') {
+
+
+                if (node.children[0].value && node.children[0].value.substring(0, 2) === "# ") {
+                    node.properties.header = 'h1';
+                    node.children[0].value = node.children[0].value.substring(2, node.children[0].value.length);
+                }
+
+            }
+
 
         })
     }
@@ -52,8 +64,31 @@ interface MarkdownRendererProps {
 }
 const MarkdownRendererMemo = ({ markdown, handleButtonClick }: MarkdownRendererProps): JSX.Element => {
     const [showPollResults, setPollShowResults] = React.useState(false);
-    const mockPollMarkdown = "[poll: Do you prefer JavaScript or TypeScript?](option1=JavaScript,option2=TypeScript,option1Result=39,option2Result=60)"
-    const mockMarkdown = "![alt promotion hero image](https://scout-poc.pages.dev/static/media/banner-renew.fa578f5b.png#hero)  &nbsp;\n  #### Renew today and get 20% off annual subscription! That's free for 2 months. \n &nbsp; [button:Renew]()"
+    const mockPollMarkdown = "[poll: Do you prefer JavaScript or TypeScript?](option1=JavaScript,option2=TypeScript,option1Result=39,option2Result=60)";
+    const mockPromotionMarkdown = "![alt promotion hero image](https://scout-poc.pages.dev/static/media/banner-renew.fa578f5b.png#hero)  &nbsp;\n Renew today and get 20% off annual subscription! That's free for 2 months. \n &nbsp; [button:Renew]()";
+    const blah = `
+    |   |   |
+    | ----------- | ----------------------------------------- |
+    | Image | ## Sushi Son Dinner set-A with coke |
+    `;
+
+    const mockOrderTrackingMarkdown = `
+|   |   |
+| - | - |
+| ![sushi](https://scout-poc.pages.dev/static/media/sushi.3245adb1.jpg) | **Sushi Son Dinner set-A with coke** |
+### Paid with
+Visa 5454
+&nbsp;
+### Ship to
+1995 Nassau Dr., Vancouver, BC V5P 3Z2
+&nbsp;
+***
+|    |       |
+| :- |    -: |
+| Total | # $60 |
+
+`;
+
     const mockMarkdownTwoLines = 'Line 1 \nLine 2'
     const ReactMarkdownMemo = React.useMemo(() => {
 
@@ -64,6 +99,17 @@ const MarkdownRendererMemo = ({ markdown, handleButtonClick }: MarkdownRendererP
         return (
             <ReactMarkdown components={{
                 p: ({ node, ...props }) => <Label color={LabelTypography.PRIMARY} type={LabelTypography.BODY_1} {...props} />,
+                strong: ({ node, ...props }) => <Label color={LabelTypography.PRIMARY} type={LabelTypography.H_2} {...props} />,
+                td: ({ node, ...props }) => {
+                    console.log('inside td', node);
+                    const fontType = node.properties.header === 'h1' ? LabelTypography.H_1 : LabelTypography.BODY_1;
+                    return <td className={node.properties.align}><Label color={LabelTypography.PRIMARY} type={fontType} {...props} /></td>
+                },
+
+                h1: ({ node, ...props }) => <Label color={LabelTypography.PRIMARY} type={LabelTypography.H_1} {...props} />,
+                h2: ({ node, ...props }) => <Label color={LabelTypography.PRIMARY} type={LabelTypography.H_2} {...props} />,
+                h3: ({ node, ...props }) => <Label color={LabelTypography.SECONDARY} type={LabelTypography.BODY_2} {...props} />,
+
                 h4: ({ node, ...props }) => <Label color={LabelTypography.PRIMARY} type={LabelTypography.SUBTITLE_2} {...props} />,
                 'button': ({ node }) => {
                     return <Button
@@ -73,9 +119,9 @@ const MarkdownRendererMemo = ({ markdown, handleButtonClick }: MarkdownRendererP
                         onClick={() => handleButtonClick(node.properties)}>{node.children[0].value}</Button>
                 }
             }}
-                remarkPlugins={[]}
+                remarkPlugins={[remarkGfm]}
                 rehypePlugins={[remarkMessageExtentionSyntax]}
-                children={mockMarkdown}
+                children={mockOrderTrackingMarkdown}
             />
         )
     }, [markdown]);

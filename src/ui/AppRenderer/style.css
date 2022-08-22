@@ -1,3 +1,7 @@
+.sendbird-app{
+  max-width: 400px;
+}
+
 .sendbird-app img {
   width: 100%;
 }
@@ -13,3 +17,27 @@
   width: 100%;
 }
 
+.sendbird-app table{
+  width:100%;
+}
+
+.sendbird-app td{
+  vertical-align: top;
+  padding:8px;
+}
+
+.sendbird-app td.right{
+  text-align: right;
+}
+
+.sendbird-app td.left{
+  text-align: left;
+}
+
+.sendbird-app td.center{
+  text-align: left;
+}
+
+.sendbird-app hr{
+  border:0.5px solid #d8d8d8;
+}
