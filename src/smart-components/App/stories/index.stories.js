@@ -64,8 +64,18 @@ const appManifests = [
     "command": "basic"
   },
   {
-    "name": "promotion-app",
+    "name": "promotion",
     "url": "http://localhost:8284/app",
+    "command": "basic"
+  },
+  {
+    "name": "order-tracking",
+    "url": "http://localhost:8284/app",
+    "command": "basic"
+  },
+  {
+    "name": "concierge",
+    "url": "http://localhost:8287/app",
     "command": "basic"
   }
 ]

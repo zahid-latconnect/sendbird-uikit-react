@@ -103,6 +103,7 @@ export default function MessageContent({
   if (message?.isAdminMessage?.() || message?.messageType === 'admin') {
     return (<ClientAdminMessage message={message} />);
   }
+  console.log('2394823084023', message)
   return (
     <div
       className={getClassName([className, 'sendbird-message-content', isByMeClassName])}

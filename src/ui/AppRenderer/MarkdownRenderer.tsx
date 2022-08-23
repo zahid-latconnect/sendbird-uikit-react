@@ -63,6 +63,7 @@ interface MarkdownRendererProps {
     markdown: string
 }
 const MarkdownRendererMemo = ({ markdown, handleButtonClick }: MarkdownRendererProps): JSX.Element => {
+    console.log('23840923804', markdown)
     const [showPollResults, setPollShowResults] = React.useState(false);
     const mockPollMarkdown = "[poll: Do you prefer JavaScript or TypeScript?](option1=JavaScript,option2=TypeScript,option1Result=39,option2Result=60)";
     const mockPromotionMarkdown = "![alt promotion hero image](https://scout-poc.pages.dev/static/media/banner-renew.fa578f5b.png#hero)  &nbsp;\n Renew today and get 20% off annual subscription! That's free for 2 months. \n &nbsp; [button:Renew]()";

@@ -19,6 +19,7 @@ interface AppRendererProps {
 
 
 const AppRenderer = ({ className, message, appManifests, sendCommand, isByMe }: AppRendererProps) => {
+    console.log('2390842309480', message)
     const appData = JSON.parse(message.data).sb_app;
     if (!!appData.isDraft && !isByMe) {
         return null;
