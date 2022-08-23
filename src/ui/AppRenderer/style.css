@@ -5,12 +5,15 @@
 .sendbird-app img {
   width: 100%;
 }
-
-.sendbird-app img[src*='#hero'] {
+/* .app img[src*='#hero']:not(.app td img[src*='#hero']) */
+.sendbird-app img[src*='#hero']:not(.sendbird-app td img[src*='#hero']){
   margin-left: -12px;
   width: calc(100% + 24px);
-  border-radius:16px  16px 0px 0px;
   margin-top: -24px;
+}
+
+.sendbird-app img[src*='#hero']{
+  border-radius:16px  16px 0px 0px;
 }
 
 .sendbird-app__button{
@@ -23,8 +26,12 @@
 
 .sendbird-app td{
   vertical-align: top;
-  padding:8px;
+  padding-right:8px;
+  padding-top:8px;
+  padding-bottom:8px;
+
 }
+
 
 .sendbird-app td.right{
   text-align: right;

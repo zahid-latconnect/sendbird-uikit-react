@@ -66,11 +66,6 @@ const MarkdownRendererMemo = ({ markdown, handleButtonClick }: MarkdownRendererP
     const [showPollResults, setPollShowResults] = React.useState(false);
     const mockPollMarkdown = "[poll: Do you prefer JavaScript or TypeScript?](option1=JavaScript,option2=TypeScript,option1Result=39,option2Result=60)";
     const mockPromotionMarkdown = "![alt promotion hero image](https://scout-poc.pages.dev/static/media/banner-renew.fa578f5b.png#hero)  &nbsp;\n Renew today and get 20% off annual subscription! That's free for 2 months. \n &nbsp; [button:Renew]()";
-    const blah = `
-    |   |   |
-    | ----------- | ----------------------------------------- |
-    | Image | ## Sushi Son Dinner set-A with coke |
-    `;
 
     const mockOrderTrackingMarkdown = `
 |   |   |
@@ -88,8 +83,15 @@ Visa 5454
 | Total | # $60 |
 
 `;
+    const mockProductsMarkdown = `
+|    |       |
+| :- |    :- |
+| ![chocolate box silver](https://scout-poc.pages.dev/static/media/chocolate-box-silver.cfd908e1.jpg#hero) | ![chocolate box gold](https://scout-poc.pages.dev/static/media/chocolate-box-gold.f07fbf2d.jpg#hero) |
+| Chocolate Lover Birthday Box - Silver | Chocolate Lover Birthday Box - Gold |
+| # $100 | # $150 |
+| [button:Select]() | [button:Select]() |
+`;
 
-    const mockMarkdownTwoLines = 'Line 1 \nLine 2'
     const ReactMarkdownMemo = React.useMemo(() => {
 
         console.log('markdown', markdown);
@@ -121,7 +123,7 @@ Visa 5454
             }}
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[remarkMessageExtentionSyntax]}
-                children={mockOrderTrackingMarkdown}
+                children={markdown}
             />
         )
     }, [markdown]);
