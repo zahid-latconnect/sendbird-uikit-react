@@ -98,8 +98,6 @@ Visa 5454
 
         console.log('markdown', markdown);
 
-
-
         return (
             <ReactMarkdown components={{
                 p: ({ node, ...props }) => <Label color={LabelTypography.PRIMARY} type={LabelTypography.BODY_1} {...props} />,

@@ -44,7 +44,7 @@ const AppRenderer = ({ className, message, appManifests, sendCommand, isByMe }: 
         isByMe ? 'outgoing' : 'incoming',
 
     ])}>
-        <MarkdownRenderer markdown={appData.ui} handleButtonClick={handleButtonClick} isByMe />
+        <MarkdownRenderer markdown={appData.ui} handleButtonClick={handleButtonClick} isByMe={isByMe} />
 
     </div >
 }
