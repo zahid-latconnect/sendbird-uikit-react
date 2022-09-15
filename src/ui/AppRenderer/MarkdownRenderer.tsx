@@ -62,9 +62,10 @@ function remarkMessageExtentionSyntax(options) {
 interface MarkdownRendererProps {
     markdown: string
 }
-const MarkdownRendererMemo = ({ markdown, handleButtonClick }: MarkdownRendererProps): JSX.Element => {
+const MarkdownRendererMemo = ({ markdown, handleButtonClick, isByMe }: MarkdownRendererProps): JSX.Element => {
     console.log('23840923804', markdown)
     const [showPollResults, setPollShowResults] = React.useState(false);
+    const mockBasicMessage = '# App Message \n [button:Confirm]()';
     const mockPollMarkdown = "[poll: Do you prefer JavaScript or TypeScript?](option1=JavaScript,option2=TypeScript,option1Result=39,option2Result=60)";
     const mockPromotionMarkdown = "![alt promotion hero image](https://scout-poc.pages.dev/static/media/banner-renew.fa578f5b.png#hero)  &nbsp;\n Renew today and get 20% off annual subscription! That's free for 2 months. \n &nbsp; [button:Renew]()";
 
@@ -102,14 +103,14 @@ Visa 5454
         return (
             <ReactMarkdown components={{
                 p: ({ node, ...props }) => <Label color={LabelTypography.PRIMARY} type={LabelTypography.BODY_1} {...props} />,
-                strong: ({ node, ...props }) => <Label color={LabelTypography.PRIMARY} type={LabelTypography.H_2} {...props} />,
+                strong: ({ node, ...props }) => <Label color={isByMe ? LabelColors.ONCONTENT_1 : LabelColors.ONBACKGROUND_1} type={LabelTypography.H_2} {...props} />,
                 td: ({ node, ...props }) => {
                     console.log('inside td', node);
                     const fontType = node.properties.header === 'h1' ? LabelTypography.H_1 : LabelTypography.BODY_1;
                     return <td className={node.properties.align}><Label color={LabelTypography.PRIMARY} type={fontType} {...props} /></td>
                 },
 
-                h1: ({ node, ...props }) => <Label color={LabelTypography.PRIMARY} type={LabelTypography.H_1} {...props} />,
+                h1: ({ node, ...props }) => <Label color={isByMe ? LabelColors.ONCONTENT_1 : LabelColors.ONBACKGROUND_1} type={LabelTypography.H_1} {...props} />,
                 h2: ({ node, ...props }) => <Label color={LabelTypography.PRIMARY} type={LabelTypography.H_2} {...props} />,
                 h3: ({ node, ...props }) => <Label color={LabelTypography.SECONDARY} type={LabelTypography.BODY_2} {...props} />,
 

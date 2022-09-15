@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { getClassName } from '../../utils';
 
 import MarkdownRenderer from './MarkdownRenderer';
-import './style.css'
+import './index.scss'
 
 
 
@@ -44,7 +44,7 @@ const AppRenderer = ({ className, message, appManifests, sendCommand, isByMe }: 
         isByMe ? 'outgoing' : 'incoming',
 
     ])}>
-        <MarkdownRenderer markdown={appData.ui} handleButtonClick={handleButtonClick} />
+        <MarkdownRenderer markdown={appData.ui} handleButtonClick={handleButtonClick} isByMe />
 
     </div >
 }

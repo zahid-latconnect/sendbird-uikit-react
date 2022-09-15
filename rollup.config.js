@@ -12,6 +12,7 @@ import typescript from '@rollup/plugin-typescript';
 import autoprefixer from 'autoprefixer';
 import copy from 'rollup-plugin-copy';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
+
 // import { sizeSnapshot } from 'rollup-plugin-size-snapshot';
 
 // config from package.json
@@ -99,6 +100,7 @@ module.exports = ({
     }),
     resolve({
       preferBuiltins: true,
+      browser: true
     }),
     commonjs(),
     nodePolyfills({

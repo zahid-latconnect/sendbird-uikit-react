@@ -78,7 +78,7 @@ const appManifests = [
     "url": "http://localhost:8287/app",
     "command": "basic"
   }
-]
+];
 
 export const chatApps = () => fitPageSize(
   <App
