@@ -6,6 +6,7 @@ import pkg from '../../../../package.json'
 import App from '../index';
 import Sendbird from '../../../lib/Sendbird';
 import ChannelList from '../../ChannelList';
+import GroupChannelList from '../../GroupChannelList';
 import Channel from '../../Channel';
 import ChannelSettings from '../../ChannelSettings';
 import MessageSearch from '../../MessageSearch';
@@ -362,12 +363,13 @@ export const user4 = () => fitPageSize(
   />
 );
 
-const UseSendbirdChannelList = (props) => {
+const SBChannelList = ({
+  setChannelUrl,
+}) => {
   const [queries] = useState({ channelListQuery: { customTypesFilter: ['apple'] } });
-  const { setChannelUrl } = props;
 
   return (
-    <ChannelList
+    <GroupChannelList
       onChannelSelect={(channel) => channel && setChannelUrl(channel?.url)}
       queries={queries}
       onBeforeCreateChannel={(selectedUserIds) => {
@@ -381,7 +383,6 @@ const UseSendbirdChannelList = (props) => {
     />
   );
 };
-const SBChannelList = withSendBird(UseSendbirdChannelList);
 const SBChannel = withSendBird((props) => {
   const {
     channelUrl,

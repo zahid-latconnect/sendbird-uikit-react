@@ -2,13 +2,13 @@ import React, { useContext, useState } from 'react';
 
 import type { User } from '@sendbird/chat';
 import type { GroupChannel, GroupChannelCreateParams } from '@sendbird/chat/groupChannel';
-import { useGroupChanelList, useGroupChannelHandler } from '@sendbird/uikit-tools';
 
 import { noop } from '../../../utils/utils';
 
 import { CHANNEL_TYPE } from '../../CreateChannel/types';
 import useSendbirdStateContext from '../../../hooks/useSendbirdStateContext';
 import { UserProfileProvider, UserProfileProviderProps } from '../../../lib/UserProfileContext';
+import { useGroupChannelList, useGroupChannelHandler, useAsyncEffect } from '@sendbird/uikit-tools';
 
 type OverrideInviteUserType = {
   users: Array<string>;
@@ -41,7 +41,7 @@ interface GroupChannelListContextType {
 
 export interface GroupChannelListProviderProps extends Partial<GroupChannelListContextType>, UserProfileProviderProps, React.PropsWithChildren {}
 
-export interface GroupChannelListProviderInterface extends GroupChannelListContextType, ReturnType<typeof useGroupChanelList> {
+export interface GroupChannelListProviderInterface extends GroupChannelListContextType, ReturnType<typeof useGroupChannelList> {
   typingChannelUrls: Array<string>;
 }
 
@@ -109,9 +109,12 @@ export const GroupChannelListProvider = (props: GroupChannelListProviderProps) =
   } = config;
   const sdk = sdkStore?.sdk;
 
-  const channelListStore = useGroupChanelList(sdk, {
-    // TODO: Apply the filter props
-  });
+  console.log('훈', {
+    useGroupChannelList,
+    useGroupChannelHandler,
+    useAsyncEffect,
+  })
+  const channelListStore = useGroupChannelList(sdk);
   const {
     refreshing,
     initialized,
