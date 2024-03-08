@@ -2,7 +2,7 @@ import './index.scss';
 import React from 'react';
 import { createPortal } from 'react-dom';
 
-import { FileViewerProps } from '.';
+import type { FileViewerProps } from '.';
 
 import type { CoreMessageType, SendableMessageType } from '../../../../utils';
 import Avatar from '../../../../ui/Avatar';
@@ -17,7 +17,7 @@ export interface FileViewerViewProps extends FileViewerProps {
   deleteMessage: ((message: SendableMessageType) => Promise<void>) | DeleteMessageTypeLegacy;
 }
 
-export const FileViewerView = ({
+export const FileViewerView: React.FC<FileViewerViewProps> = ({
   message,
   onCancel,
   deleteMessage,

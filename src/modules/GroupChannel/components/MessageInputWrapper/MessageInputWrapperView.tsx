@@ -271,6 +271,6 @@ export const MessageInputWrapperView = React.forwardRef((
   );
 });
 
-export { VoiceMessageInputWrapper, VoiceMessageInputWrapperProps } from './VoiceMessageInputWrapper';
+export { VoiceMessageInputWrapper } from './VoiceMessageInputWrapper';
 
 export default MessageInputWrapperView;

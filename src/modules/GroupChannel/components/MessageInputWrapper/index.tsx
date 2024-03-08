@@ -45,7 +45,7 @@ export const MessageInputWrapper = (props: MessageInputWrapperProps) => {
 
 export {
   VoiceMessageInputWrapper,
-  VoiceMessageInputWrapperProps,
+  // VoiceMessageInputWrapperProps,
 } from './VoiceMessageInputWrapper';
 
 export default MessageInputWrapper;
